@@ -2,11 +2,24 @@ package agh.ics.oop;
 
 public class World {
     public static void main(String[] args) {
+        // Labs 1
         System.out.println("Start");
         Direction[] newArgs;
         newArgs = run_enum(args);
         run(newArgs);
         System.out.println("Stop");
+
+        // Labs 2
+        Vector2d position1 = new Vector2d(1, 2);
+        System.out.println(position1);
+        Vector2d position2 = new Vector2d(-2, 1);
+        System.out.println(position2);
+        System.out.println(position1.add(position2));
+
+        System.out.println(MapDirection.SOUTH);
+        System.out.println(MapDirection.SOUTH.next());
+        System.out.println(MapDirection.SOUTH.previous());
+        System.out.println(MapDirection.SOUTH.toUnitVector());
     }
 
     public static Direction[] run_enum(String[] args) {
