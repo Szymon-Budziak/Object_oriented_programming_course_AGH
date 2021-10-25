@@ -20,6 +20,16 @@ public class World {
         System.out.println(MapDirection.SOUTH.next());
         System.out.println(MapDirection.SOUTH.previous());
         System.out.println(MapDirection.SOUTH.toUnitVector());
+
+        // Labs 3
+        Animal animal = new Animal();
+        System.out.println(animal);
+        String[] directions = new String[]{"r", "forward", "f", "left", "b"};
+        MoveDirection[] newDirections = OptionsParser.parse(directions);
+        for (MoveDirection direct : newDirections) {
+            animal.move(direct);
+            System.out.println(animal);
+        }
     }
 
     public static Direction[] run_enum(String[] args) {
