@@ -2,55 +2,70 @@ package agh.ics.oop;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 public class AnimalTest {
-    Animal animalOrientation = new Animal();
+    Animal animal1 = new Animal();
 
     @Test
     public void orientationTest() {
-        animalOrientation.move(MoveDirection.RIGHT);
-        assertEquals("Animal position is: Wschód and (2, 2)", animalOrientation.toString());
-        animalOrientation.move(MoveDirection.FORWARD);
-        assertEquals("Animal position is: Wschód and (3, 2)", animalOrientation.toString());
-        animalOrientation.move(MoveDirection.LEFT);
-        assertNotEquals("Animal position is: Zachód and (4, 2)", animalOrientation.toString());
-        animalOrientation.move(MoveDirection.LEFT);
-        animalOrientation.move(MoveDirection.BACKWARD);
-        assertNotEquals("Animal position is: Północ and (1, 1)", animalOrientation.toString());
+        animal1.move(MoveDirection.RIGHT);
+        assertEquals(MapDirection.EAST, animal1.getOrientation());
+        animal1.move(MoveDirection.FORWARD);
+        animal1.move(MoveDirection.LEFT);
+        assertEquals(MapDirection.NORTH, animal1.getOrientation());
+        animal1.move(MoveDirection.LEFT);
+        animal1.move(MoveDirection.LEFT);
+        assertEquals(MapDirection.SOUTH, animal1.getOrientation());
+        animal1.move(MoveDirection.RIGHT);
+        animal1.move(MoveDirection.BACKWARD);
+        assertEquals(MapDirection.WEST, animal1.getOrientation());
     }
 
-    Animal animalPosition = new Animal();
+    Animal animal2 = new Animal();
 
     @Test
     public void positionTest() {
-        animalPosition.move(MoveDirection.LEFT);
-        assertEquals("Animal position is: Zachód and (2, 2)", animalPosition.toString());
-        animalPosition.move(MoveDirection.BACKWARD);
-        animalPosition.move(MoveDirection.BACKWARD);
-        assertEquals("Animal position is: Zachód and (4, 2)", animalPosition.toString());
-        animalPosition.move(MoveDirection.BACKWARD);
-        assertNotEquals("Animal position is: Zachód and (5, 2)", animalPosition.toString());
-        animalPosition.move(MoveDirection.LEFT);
-        animalPosition.move(MoveDirection.BACKWARD);
-        assertNotEquals("Animal position is: Wschód and (4, 4)", animalPosition.toString());
+        animal2.move(MoveDirection.FORWARD);
+        assertEquals(new Vector2d(2, 3), animal2.getPosition());
+        animal2.move(MoveDirection.LEFT);
+        animal2.move(MoveDirection.BACKWARD);
+        assertEquals(new Vector2d(3, 3), animal2.getPosition());
+        animal2.move(MoveDirection.LEFT);
+        animal2.move(MoveDirection.FORWARD);
+        animal2.move(MoveDirection.FORWARD);
+        assertEquals(new Vector2d(3, 1), animal2.getPosition());
+        animal2.move(MoveDirection.RIGHT);
+        animal2.move(MoveDirection.FORWARD);
+        animal2.move(MoveDirection.FORWARD);
+        assertEquals(new Vector2d(1, 1), animal2.getPosition());
     }
 
-    Animal animalOutsideTheMap = new Animal();
+    Animal animal3 = new Animal();
+    Animal animal4 = new Animal();
 
     @Test
     public void outsideTheMapTest() {
-        animalPosition.move(MoveDirection.FORWARD);
-        animalPosition.move(MoveDirection.FORWARD);
-        animalPosition.move(MoveDirection.FORWARD);
-        assertEquals("Animal position is: Północ and (2, 4)", animalPosition.toString());
-        animalPosition.move(MoveDirection.RIGHT);
-        assertEquals("Animal position is: Wschód and (2, 4)", animalPosition.toString());
-        animalPosition.move(MoveDirection.LEFT);
-        animalPosition.move(MoveDirection.FORWARD);
-        assertNotEquals("Animal position is: Północ and (2, 3)", animalPosition.toString());
-        animalPosition.move(MoveDirection.BACKWARD);
-        assertNotEquals("Animal position is: Północ and (2, 4)", animalPosition.toString());
+        animal3.move(MoveDirection.FORWARD);
+        animal3.move(MoveDirection.FORWARD);
+        animal3.move(MoveDirection.FORWARD);
+        assertEquals(new Vector2d(2, 4), animal3.getPosition());
+        animal3.move(MoveDirection.RIGHT);
+        animal3.move(MoveDirection.FORWARD);
+        animal3.move(MoveDirection.FORWARD);
+        animal3.move(MoveDirection.FORWARD);
+        assertEquals(new Vector2d(4, 4), animal3.getPosition());
+        animal4.move(MoveDirection.BACKWARD);
+        animal4.move(MoveDirection.BACKWARD);
+        animal4.move(MoveDirection.BACKWARD);
+        assertEquals(new Vector2d(2, 0), animal4.getPosition());
+        animal4.move(MoveDirection.LEFT);
+        animal4.move(MoveDirection.BACKWARD);
+        animal4.move(MoveDirection.BACKWARD);
+        animal4.move(MoveDirection.BACKWARD);
+        assertEquals(new Vector2d(4, 0), animal4.getPosition());
     }
 
     public boolean searchForValue(String input) {
@@ -72,5 +87,18 @@ public class AnimalTest {
         for (String s : wrongDirections) {
             assertFalse(searchForValue(s));
         }
+    }
+
+    @Test
+    public void correctMovement() {
+        MoveDirection[] directions = OptionsParser.parse(new String[]{"f", "b", "r", "l", "f", "f", "r", "r", "f", "f", "f", "f", "f", "f", "f", "f"});
+        IWorldMap map = new RectangularMap(10, 5);
+        Vector2d[] positions = {new Vector2d(2, 2), new Vector2d(3, 4)};
+        SimulationEngine engine = new SimulationEngine(directions, map, positions);
+        engine.run();
+        assertTrue(engine.getAnimal(0).isAt(new Vector2d(3, 0)));
+        assertFalse(engine.getAnimal(0).isAt(new Vector2d(4, 0)));
+        assertTrue(engine.getAnimal(1).isAt(new Vector2d(2, 4)));
+        assertFalse(engine.getAnimal(1).isAt(new Vector2d(3, 4)));
     }
 }
