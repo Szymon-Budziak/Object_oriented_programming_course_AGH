@@ -5,7 +5,6 @@ public class Animal {
     private Vector2d position;
     private IWorldMap map;
 
-
     public Animal(IWorldMap map, Vector2d initialPosition) {
         this.map = map;
         this.position = initialPosition;
@@ -19,7 +18,6 @@ public class Animal {
     public Animal() {
         this(new RectangularMap(5, 5));
     }
-
 
     public MapDirection getOrientation() {
         return orientation;
@@ -43,23 +41,19 @@ public class Animal {
     }
 
     public void move(MoveDirection direction) {
-        Vector2d new_position = position;
+        Vector2d newPosition = position;
         switch (direction) {
             case RIGHT -> orientation = orientation.next();
             case LEFT -> orientation = orientation.previous();
             case FORWARD -> {
-                if (position.precedes(new Vector2d(4, 4)) && position.follows(new Vector2d(0, 0))) {
-                    new_position = position.add(orientation.toUnitVector());
-                }
+                newPosition = position.add(orientation.toUnitVector());
             }
             case BACKWARD -> {
-                if (position.precedes(new Vector2d(4, 4)) && position.follows(new Vector2d(0, 0))) {
-                    new_position = position.subtract(orientation.toUnitVector());
-                }
+                newPosition = position.subtract(orientation.toUnitVector());
             }
         }
-        if (new_position.x < 5 && new_position.x > -1 && new_position.y < 5 && new_position.y > -1) {
-            position = new_position;
+        if (map.canMoveTo(newPosition)) {
+            this.position = newPosition;
         }
     }
 }
