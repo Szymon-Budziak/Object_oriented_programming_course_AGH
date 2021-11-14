@@ -2,8 +2,6 @@ package agh.ics.oop;
 
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 public class AnimalTest {
@@ -90,7 +88,7 @@ public class AnimalTest {
     }
 
     @Test
-    public void correctMovement() {
+    public void correctMovementTest() {
         MoveDirection[] directions = OptionsParser.parse(new String[]{"f", "b", "r", "l", "f", "f", "r", "r", "f", "f", "f", "f", "f", "f", "f", "f"});
         IWorldMap map = new RectangularMap(10, 5);
         Vector2d[] positions = {new Vector2d(2, 2), new Vector2d(3, 4)};
