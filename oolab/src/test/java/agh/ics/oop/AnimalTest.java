@@ -49,21 +49,21 @@ public class AnimalTest {
         animal3.move(MoveDirection.FORWARD);
         animal3.move(MoveDirection.FORWARD);
         animal3.move(MoveDirection.FORWARD);
-        assertEquals(new Vector2d(2, 4), animal3.getPosition());
+        assertEquals(new Vector2d(2, 5), animal3.getPosition());
         animal3.move(MoveDirection.RIGHT);
         animal3.move(MoveDirection.FORWARD);
         animal3.move(MoveDirection.FORWARD);
         animal3.move(MoveDirection.FORWARD);
-        assertEquals(new Vector2d(4, 4), animal3.getPosition());
+        assertEquals(new Vector2d(5, 5), animal3.getPosition());
         animal4.move(MoveDirection.BACKWARD);
         animal4.move(MoveDirection.BACKWARD);
         animal4.move(MoveDirection.BACKWARD);
-        assertEquals(new Vector2d(2, 0), animal4.getPosition());
+        assertEquals(new Vector2d(2, -1), animal4.getPosition());
         animal4.move(MoveDirection.LEFT);
         animal4.move(MoveDirection.BACKWARD);
         animal4.move(MoveDirection.BACKWARD);
         animal4.move(MoveDirection.BACKWARD);
-        assertEquals(new Vector2d(4, 0), animal4.getPosition());
+        assertEquals(new Vector2d(5, -1), animal4.getPosition());
     }
 
     public boolean searchForValue(String input) {
@@ -94,9 +94,9 @@ public class AnimalTest {
         Vector2d[] positions = {new Vector2d(2, 2), new Vector2d(3, 4)};
         SimulationEngine engine = new SimulationEngine(directions, map, positions);
         engine.run();
-        assertTrue(engine.getAnimal(0).isAt(new Vector2d(2, 0)));
+        assertTrue(engine.getAnimal(0).isAt(new Vector2d(2, -1)));
         assertFalse(engine.getAnimal(0).isAt(new Vector2d(4, 0)));
-        assertTrue(engine.getAnimal(1).isAt(new Vector2d(3, 4)));
+        assertTrue(engine.getAnimal(1).isAt(new Vector2d(3, 7)));
         assertFalse(engine.getAnimal(1).isAt(new Vector2d(0, 2)));
     }
 }

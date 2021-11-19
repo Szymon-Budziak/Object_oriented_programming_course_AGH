@@ -1,11 +1,9 @@
 package agh.ics.oop;
 
-import javax.swing.text.Position;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Random;
-import java.util.stream.IntStream;
 
 public class GrassField extends AbstractWorldMap {
     private final int clumpsOfGrass;
@@ -16,8 +14,8 @@ public class GrassField extends AbstractWorldMap {
 
     public GrassField(int n, Vector2d[] positions) {
         this.clumpsOfGrass = n;
-        this.lowerLeftCorner = new Vector2d(0, 0);
-        this.upperRightCorner = new Vector2d((int) Math.sqrt(10 * n) + 1, (int) Math.sqrt(10 * n) + 1);
+        this.lowerLeftCorner = new Vector2d(Integer.MIN_VALUE, Integer.MIN_VALUE);
+        this.upperRightCorner = new Vector2d(Integer.MAX_VALUE, Integer.MAX_VALUE);
         Random random = new Random();
         int grassCount = 0;
         while (grassCount < this.clumpsOfGrass) {

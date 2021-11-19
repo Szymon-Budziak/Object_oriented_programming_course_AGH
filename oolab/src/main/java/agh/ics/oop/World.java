@@ -13,6 +13,6 @@ public class World {
         IWorldMap map = new GrassField(10, positions);
         IEngine engine = new SimulationEngine(directions, map, positions);
         engine.run();
-        System.out.println(map.toString());
+        System.out.print(map.toString());
     }
 }
