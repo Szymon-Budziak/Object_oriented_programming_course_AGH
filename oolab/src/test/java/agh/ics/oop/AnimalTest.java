@@ -94,9 +94,9 @@ public class AnimalTest {
         Vector2d[] positions = {new Vector2d(2, 2), new Vector2d(3, 4)};
         SimulationEngine engine = new SimulationEngine(directions, map, positions);
         engine.run();
-        assertTrue(engine.getAnimal(0).isAt(new Vector2d(2, -1)));
+        assertTrue(engine.getAnimal(0).isAt(new Vector2d(3, -1)));
         assertFalse(engine.getAnimal(0).isAt(new Vector2d(4, 0)));
-        assertTrue(engine.getAnimal(1).isAt(new Vector2d(3, 7)));
+        assertTrue(engine.getAnimal(1).isAt(new Vector2d(2, 7)));
         assertFalse(engine.getAnimal(1).isAt(new Vector2d(0, 2)));
     }
 }

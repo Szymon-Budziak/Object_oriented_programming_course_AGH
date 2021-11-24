@@ -2,32 +2,24 @@ package agh.ics.oop;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.Random;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 public class GrassFieldTest {
     @Test
-    public void placeGrassTest() {
+    public void grassFieldTest() {
         int grass = 10;
-        MoveDirection[] directions = OptionsParser.parse(new String[]{"f", "b", "r", "l", "f", "f", "r", "r", "f", "f", "f", "f", "f", "f", "f", "f"});
+        MoveDirection[] directions = OptionsParser.parse(new String[]{"f", "b", "r", "l", "f", "f", "r", "r", "f", "f", "f", "f", "f", "f", "f", "l"});
         Vector2d[] positions = {new Vector2d(2, 2), new Vector2d(3, 4)};
-        GrassField grassField = new GrassField(grass, positions);
+        IWorldMap grassField = new GrassField(grass);
         IEngine engine = new SimulationEngine(directions, grassField, positions);
         engine.run();
+        Random random = new Random();
         for (int i = 0; i < grass; i++) {
-            assertFalse(grassField.canMoveTo(grassField.getGrassAt(i).getPosition()));
-        }
-    }
-
-    @Test
-    public void correctMovementTest() {
-        int grass = 10;
-        Vector2d[] positions = {new Vector2d(2, 2), new Vector2d(3, 4)};
-        GrassField grassField = new GrassField(grass, positions);
-        MoveDirection[] directions = OptionsParser.parse(new String[]{"f", "b", "r", "l", "f", "f", "r", "r", "f", "f", "f", "f", "f", "f", "f", "f"});
-        IEngine engine = new SimulationEngine(directions, grassField, positions);
-        engine.run();
-        for (int i = 0; i < grass; i++) {
-            assertFalse(grassField.canMoveTo(grassField.getGrassAt(i).getPosition()));
+            int x = random.nextInt((int) Math.sqrt(10 * grass));
+            int y = random.nextInt((int) Math.sqrt(10 * grass));
+            assertTrue(grassField.canMoveTo(new Vector2d(x, y)));
         }
     }
 }

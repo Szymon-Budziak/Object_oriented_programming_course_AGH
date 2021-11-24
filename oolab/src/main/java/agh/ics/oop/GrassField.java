@@ -1,51 +1,36 @@
 package agh.ics.oop;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Random;
+import java.util.*;
 
 public class GrassField extends AbstractWorldMap {
     private final int clumpsOfGrass;
-    private final Vector2d lowerLeftCorner;
-    private final Vector2d upperRightCorner;
-    public List<Grass> grassPoints = new ArrayList<Grass>();
-    public List<Animal> animals = new ArrayList<Animal>();
+    private Vector2d lowerLeftCorner;
+    private Vector2d upperRightCorner;
+    public HashMap<Vector2d, Grass> grassPoints = new LinkedHashMap<>();
+    public HashMap<Vector2d, Animal> animals = new LinkedHashMap<>();
 
-    public GrassField(int n, Vector2d[] positions) {
+    public GrassField(int n) {
         this.clumpsOfGrass = n;
         this.lowerLeftCorner = new Vector2d(Integer.MIN_VALUE, Integer.MIN_VALUE);
         this.upperRightCorner = new Vector2d(Integer.MAX_VALUE, Integer.MAX_VALUE);
         Random random = new Random();
-        int grassCount = 0;
-        while (grassCount < this.clumpsOfGrass) {
+        while (grassPoints.size() < this.clumpsOfGrass) {
             int x = random.nextInt((int) Math.sqrt(10 * n));
             int y = random.nextInt((int) Math.sqrt(10 * n));
-            if (!isOccupied(new Vector2d(x, y))) {
-                int count = 0;
-                for (Vector2d position : positions) {
-                    if (!Objects.equals(position, new Vector2d(x, y))) {
-                        count++;
-                    }
-                }
-                if (count == positions.length) {
-                    this.grassPoints.add(new Grass(new Vector2d(x, y)));
-                    grassCount++;
-                }
+            Vector2d position = new Vector2d(x, y);
+            if (getGrassAt(position) != null) {
+                continue;
             }
+            this.grassPoints.put(position, new Grass(position));
         }
     }
 
-    public Grass getGrassAt(int index) {
-        return grassPoints.get(index);
+    private Grass getGrassAt(Vector2d position) {
+        return grassPoints.get(position);
     }
 
-    public Vector2d getUpperRight() {
-        return upperRightCorner;
-    }
-
-    public Vector2d getLowerLeft() {
-        return lowerLeftCorner;
+    private Animal getAnimalAt(Vector2d position) {
+        return animals.get(position);
     }
 
     @Override
@@ -60,55 +45,18 @@ public class GrassField extends AbstractWorldMap {
 
     @Override
     public boolean canMoveTo(Vector2d position) {
-        return position.x >= 0 && position.y >= 0 && !isOccupied(position);
-    }
-
-    @Override
-    public boolean place(Animal animal) {
-        if (!isOccupied(animal.getPosition())) {
-            animals.add(animal);
-            return true;
-        } else {
-            Object object = objectAt(animal.getPosition());
-            if (object instanceof Grass) {
-                for (Grass grass : grassPoints) {
-                    if (grass.getPosition().x == animal.getPosition().x && grass.getPosition().y == animal.getPosition().y) {
-                        grassPoints.remove(grass);
-                        break;
-                    }
-                }
-                animals.add(animal);
-            } else return false;
-        }
-        return false;
-    }
-
-    @Override
-    public boolean isOccupied(Vector2d position) {
-        for (Animal animal : animals) {
-            if (animal.getPosition().equals(position)) {
-                return true;
-            }
-        }
-        for (Grass grass : grassPoints) {
-            if (grass.getPosition().equals(position)) {
-                return true;
-            }
-        }
-        return false;
+        return !isOccupied(position) || objectAt(position) instanceof Grass;
     }
 
     @Override
     public Object objectAt(Vector2d position) {
-        for (Animal animal : animals) {
-            if (animal.getPosition().equals(position)) {
-                return animal;
-            }
+        Animal animal = getAnimalAt(position);
+        if (animal != null) {
+            return animal;
         }
-        for (Grass grass : grassPoints) {
-            if (grass.getPosition().equals(position)) {
-                return grass;
-            }
+        Grass grass = getGrassAt(position);
+        if (grass != null) {
+            return grass;
         }
         return null;
     }

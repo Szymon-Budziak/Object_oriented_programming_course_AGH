@@ -1,31 +1,31 @@
 package agh.ics.oop;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 public class RectangularMap extends AbstractWorldMap implements IWorldMap {
     private final int width;
     private final int height;
     private final Vector2d lowerLeftCorner;
     private final Vector2d upperRightCorner;
-    private final List<Animal> animals;
+    private HashMap<Vector2d, Animal> animals = new LinkedHashMap<>();
 
     public RectangularMap(int width, int height) {
         this.width = width;
         this.height = height;
         this.lowerLeftCorner = new Vector2d(Integer.MIN_VALUE, Integer.MIN_VALUE);
         this.upperRightCorner = new Vector2d(Integer.MAX_VALUE, Integer.MAX_VALUE);
-        this.animals = new ArrayList<>();
+        this.animals = new LinkedHashMap<>();
     }
 
     @Override
     public Vector2d upperRight() {
-        return null;
+        return upperRightCorner;
     }
 
     @Override
     public Vector2d lowerLeft() {
-        return null;
+        return lowerLeftCorner;
     }
 
     @Override
@@ -33,33 +33,10 @@ public class RectangularMap extends AbstractWorldMap implements IWorldMap {
         return position.follows(lowerLeftCorner) && position.precedes(upperRightCorner) && !isOccupied(position);
     }
 
-    @Override
-    public boolean place(Animal animal) {
-        if (!isOccupied(animal.getPosition())) {
-            animals.add(animal);
-            return true;
-        }
-        return false;
-    }
-
-    @Override
-    public boolean isOccupied(Vector2d position) {
-        for (Animal animal : animals) {
-            if (animal.getPosition().equals(position)) {
-                return true;
-            }
-        }
-        return false;
-    }
 
     @Override
     public Object objectAt(Vector2d position) {
-        for (Animal animal : animals) {
-            if (animal.getPosition().equals(position)) {
-                return animal;
-            }
-        }
-        return null;
+        return animals.get(position);
     }
 
     public String toString() {

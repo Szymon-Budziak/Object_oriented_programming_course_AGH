@@ -11,12 +11,7 @@ public class Vector2d {
         this.y = y;
     }
 
-    public String toString() {
-        return "(" + x + ", " + y + ")";
-    }
-
     public boolean precedes(Vector2d other) {
-
         return x <= other.x && y <= other.y;
     }
 
@@ -51,10 +46,14 @@ public class Vector2d {
 
     @Override
     public int hashCode() {
-        return Objects.hash(x, y);
+        return Objects.hash(x,y);
     }
 
     public Vector2d opposite() {
-        return new Vector2d(-x, -y);
+        return new Vector2d(-this.x, -this.y);
+    }
+
+    public String toString() {
+        return "(" + x + ", " + y + ")";
     }
 }
