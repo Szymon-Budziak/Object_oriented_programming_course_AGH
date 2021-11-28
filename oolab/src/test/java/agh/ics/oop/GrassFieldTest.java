@@ -2,8 +2,6 @@ package agh.ics.oop;
 
 import org.junit.jupiter.api.Test;
 
-import java.util.Random;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 public class GrassFieldTest {
@@ -15,11 +13,9 @@ public class GrassFieldTest {
         IWorldMap grassField = new GrassField(grass);
         IEngine engine = new SimulationEngine(directions, grassField, positions);
         engine.run();
-        Random random = new Random();
-        for (int i = 0; i < grass; i++) {
-            int x = random.nextInt((int) Math.sqrt(10 * grass));
-            int y = random.nextInt((int) Math.sqrt(10 * grass));
-            assertTrue(grassField.canMoveTo(new Vector2d(x, y)));
-        }
+        assertTrue(grassField.canMoveTo(new Vector2d(10, 12)));
+        assertTrue(grassField.canMoveTo(new Vector2d(6, 12)));
+        assertTrue(grassField.canMoveTo(new Vector2d(40, 17)));
+        assertTrue(grassField.canMoveTo(new Vector2d(100, 180)));
     }
 }

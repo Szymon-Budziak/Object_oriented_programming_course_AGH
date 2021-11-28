@@ -6,25 +6,24 @@ import java.util.LinkedHashMap;
 public abstract class AbstractWorldMap implements IWorldMap, IPositionChangeObserver {
     protected HashMap<Vector2d, Animal> animals = new LinkedHashMap<>();
 
-    public abstract Vector2d upperRight();
-
-    public abstract Vector2d lowerLeft();
+    @Override
+    public boolean place(Animal animal) throws IllegalArgumentException {
+        if (!this.canMoveTo(animal.getPosition())) {
+            throw new IllegalArgumentException(animal.getPosition() + " is not legal move specification");
+        }
+        animals.put(animal.getPosition(), animal);
+        animal.addObserver(this);
+        return true;
+    }
 
     @Override
-    public boolean place(Animal animal) {
-        if (canMoveTo(animal.getPosition())) {
-            animals.put(animal.getPosition(), animal);
-            return true;
-        }
-        return false;
+    public boolean canMoveTo(Vector2d position) {
+        return (!isOccupied(position));
     }
 
     @Override
     public boolean isOccupied(Vector2d position) {
-        if (objectAt(position) == null) {
-            return false;
-        }
-        return true;
+        return objectAt(position) != null;
     }
 
     @Override
@@ -34,9 +33,13 @@ public abstract class AbstractWorldMap implements IWorldMap, IPositionChangeObse
         animals.put(newPosition, animal);
     }
 
+    public abstract Vector2d getUpperRight();
+
+    public abstract Vector2d getLowerLeft();
+
     @Override
     public String toString() {
         MapVisualizer map = new MapVisualizer(this);
-        return map.draw(lowerLeft(), upperRight());
+        return map.draw(getLowerLeft(), getUpperRight());
     }
 }

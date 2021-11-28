@@ -1,36 +1,29 @@
 package agh.ics.oop;
 
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-
 public class RectangularMap extends AbstractWorldMap implements IWorldMap {
     private final int width;
     private final int height;
     private final Vector2d lowerLeftCorner;
     private final Vector2d upperRightCorner;
-    private HashMap<Vector2d, Animal> animals = new LinkedHashMap<>();
 
     public RectangularMap(int width, int height) {
         this.width = width;
         this.height = height;
-        this.lowerLeftCorner = new Vector2d(Integer.MIN_VALUE, Integer.MIN_VALUE);
-        this.upperRightCorner = new Vector2d(Integer.MAX_VALUE, Integer.MAX_VALUE);
-        this.animals = new LinkedHashMap<>();
+        this.lowerLeftCorner = new Vector2d(0, 0);
+        this.upperRightCorner = new Vector2d(width, height);
     }
 
-    @Override
-    public Vector2d upperRight() {
+    public Vector2d getUpperRight() {
         return upperRightCorner;
     }
 
-    @Override
-    public Vector2d lowerLeft() {
+    public Vector2d getLowerLeft() {
         return lowerLeftCorner;
     }
 
     @Override
     public boolean canMoveTo(Vector2d position) {
-        return position.follows(lowerLeftCorner) && position.precedes(upperRightCorner) && !isOccupied(position);
+        return position.follows(lowerLeftCorner) && position.precedes(upperRightCorner) && super.canMoveTo(position);
     }
 
 

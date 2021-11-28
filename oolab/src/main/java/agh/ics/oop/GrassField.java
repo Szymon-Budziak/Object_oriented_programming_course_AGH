@@ -4,48 +4,34 @@ import java.util.*;
 
 public class GrassField extends AbstractWorldMap {
     private final int clumpsOfGrass;
-    private Vector2d lowerLeftCorner;
-    private Vector2d upperRightCorner;
     public HashMap<Vector2d, Grass> grassPoints = new LinkedHashMap<>();
-    public HashMap<Vector2d, Animal> animals = new LinkedHashMap<>();
+    private MapBoundary mapBoundary;
 
     public GrassField(int n) {
         this.clumpsOfGrass = n;
-        this.lowerLeftCorner = new Vector2d(Integer.MIN_VALUE, Integer.MIN_VALUE);
-        this.upperRightCorner = new Vector2d(Integer.MAX_VALUE, Integer.MAX_VALUE);
+        this.mapBoundary = new MapBoundary();
         Random random = new Random();
-        while (grassPoints.size() < this.clumpsOfGrass) {
-            int x = random.nextInt((int) Math.sqrt(10 * n));
-            int y = random.nextInt((int) Math.sqrt(10 * n));
-            Vector2d position = new Vector2d(x, y);
-            if (getGrassAt(position) != null) {
-                continue;
-            }
+        for (int i = 0; i < n; i++) {
+            int x, y;
+            Vector2d position;
+            do {
+                x = random.nextInt((int) Math.sqrt(10 * n));
+                y = random.nextInt((int) Math.sqrt(10 * n));
+                position = new Vector2d(x, y);
+            } while (objectAt(position) instanceof Grass);
             this.grassPoints.put(position, new Grass(position));
+            mapBoundary.addPosition(position);
         }
     }
 
-    private Grass getGrassAt(Vector2d position) {
-        return grassPoints.get(position);
-    }
-
-    private Animal getAnimalAt(Vector2d position) {
-        return animals.get(position);
-    }
-
     @Override
-    public Vector2d upperRight() {
-        return null;
-    }
-
-    @Override
-    public Vector2d lowerLeft() {
-        return null;
-    }
-
-    @Override
-    public boolean canMoveTo(Vector2d position) {
-        return !isOccupied(position) || objectAt(position) instanceof Grass;
+    public boolean place(Animal animal) throws IllegalArgumentException {
+        if (super.place(animal)) {
+            mapBoundary.addPosition(animal.getPosition());
+            animal.addObserver(mapBoundary);
+            return true;
+        } else
+            throw new IllegalArgumentException(animal.getPosition() + " is not legal move specification");
     }
 
     @Override
@@ -61,9 +47,25 @@ public class GrassField extends AbstractWorldMap {
         return null;
     }
 
+    private Grass getGrassAt(Vector2d position) {
+        return grassPoints.get(position);
+    }
+
+    private Animal getAnimalAt(Vector2d position) {
+        return animals.get(position);
+    }
+
+    public Vector2d getUpperRight() {
+        return mapBoundary.getUpperRight();
+    }
+
+    public Vector2d getLowerLeft() {
+        return mapBoundary.getLowerLeft();
+    }
+
     @Override
     public String toString() {
         MapVisualizer map = new MapVisualizer(this);
-        return map.draw(lowerLeftCorner, upperRightCorner);
+        return map.draw(getLowerLeft(), getUpperRight());
     }
 }
