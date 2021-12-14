@@ -5,6 +5,7 @@ import java.util.LinkedHashMap;
 
 public abstract class AbstractWorldMap implements IWorldMap, IPositionChangeObserver {
     protected HashMap<Vector2d, Animal> animals = new LinkedHashMap<>();
+    MapVisualizer map = new MapVisualizer(this);
 
     @Override
     public boolean place(Animal animal) throws IllegalArgumentException {
@@ -33,13 +34,23 @@ public abstract class AbstractWorldMap implements IWorldMap, IPositionChangeObse
         animals.put(newPosition, animal);
     }
 
+    protected Vector2d[] getAnimalsAndGrass() {
+        Vector2d[] onlyAnimals = new Vector2d[animals.size()];
+        int index = 0;
+        for (Vector2d key : animals.keySet()) {
+            onlyAnimals[index] = key;
+            index++;
+        }
+        return onlyAnimals;
+    }
+
+
     public abstract Vector2d getUpperRight();
 
     public abstract Vector2d getLowerLeft();
 
     @Override
     public String toString() {
-        MapVisualizer map = new MapVisualizer(this);
         return map.draw(getLowerLeft(), getUpperRight());
     }
 }

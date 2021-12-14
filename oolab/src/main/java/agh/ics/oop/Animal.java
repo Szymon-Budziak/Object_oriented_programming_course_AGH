@@ -3,10 +3,10 @@ package agh.ics.oop;
 import java.util.LinkedList;
 import java.util.List;
 
-public class Animal {
+public class Animal implements IMapElement {
     private MapDirection orientation = MapDirection.NORTH;
     private Vector2d position;
-    private IWorldMap map;
+    private final IWorldMap map;
     private final List<IPositionChangeObserver> observers = new LinkedList<>();
 
     public Animal(IWorldMap map, Vector2d initialPosition) {
@@ -37,26 +37,23 @@ public class Animal {
     public void move(MoveDirection direction) {
         Vector2d newPosition;
         switch (direction) {
-            case RIGHT -> orientation = orientation.next();
-            case LEFT -> orientation = orientation.previous();
+            case RIGHT -> this.orientation = orientation.next();
+            case LEFT -> this.orientation = orientation.previous();
             case FORWARD -> {
                 newPosition = position.add(orientation.toUnitVector());
                 if (this.map.canMoveTo(newPosition)) {
+                    positionChanged(this.position, newPosition);
                     this.position = newPosition;
-                    for (IPositionChangeObserver observer : observers) {
-                        observer.positionChanged(this.getPosition(), newPosition);
-                    }
                 }
             }
             case BACKWARD -> {
                 newPosition = position.subtract(orientation.toUnitVector());
                 if (this.map.canMoveTo(newPosition)) {
+                    positionChanged(this.position, newPosition);
                     this.position = newPosition;
-                    for (IPositionChangeObserver observer : observers) {
-                        observer.positionChanged(this.getPosition(), newPosition);
-                    }
                 }
             }
+            default -> throw new IllegalStateException("Unexpected value: " + direction);
         }
     }
 

@@ -2,6 +2,9 @@ package agh.ics.oop;
 
 import java.util.Objects;
 
+import static java.lang.Math.min;
+import static java.lang.Math.max;
+
 public class Vector2d {
     public final int x;
     public final int y;
@@ -12,33 +15,33 @@ public class Vector2d {
     }
 
     public boolean precedes(Vector2d other) {
-        return x <= other.x && y <= other.y;
+        return this.x <= other.x && this.y <= other.y;
     }
 
     public boolean follows(Vector2d other) {
-        return x >= other.x && y >= other.y;
+        return this.x >= other.x && this.y >= other.y;
     }
 
     public Vector2d upperRight(Vector2d other) {
-        return new Vector2d(Math.max(x, other.x), Math.max(y, other.y));
+        return new Vector2d(max(this.x, other.x), max(this.y, other.y));
     }
 
     public Vector2d lowerLeft(Vector2d other) {
-        return new Vector2d(Math.min(x, other.x), Math.min(y, other.y));
+        return new Vector2d(min(this.x, other.x), min(y, other.y));
     }
 
     public Vector2d add(Vector2d other) {
-        return new Vector2d(x + other.x, y + other.y);
+        return new Vector2d(this.x + other.x, this.y + other.y);
     }
 
     public Vector2d subtract(Vector2d other) {
-        return new Vector2d(x - other.x, y - other.y);
+        return new Vector2d(this.x - other.x, this.y - other.y);
     }
 
     @Override
     public boolean equals(Object other) {
         if (other instanceof Vector2d) {
-            return x == ((Vector2d) other).x && y == ((Vector2d) other).y;
+            return this.x == ((Vector2d) other).x && this.y == ((Vector2d) other).y;
         } else {
             return false;
         }
@@ -46,7 +49,7 @@ public class Vector2d {
 
     @Override
     public int hashCode() {
-        return Objects.hash(x,y);
+        return Objects.hash(this.x, this.y);
     }
 
     public Vector2d opposite() {
@@ -54,6 +57,6 @@ public class Vector2d {
     }
 
     public String toString() {
-        return "(" + x + ", " + y + ")";
+        return "(" + this.x + ", " + this.y + ")";
     }
 }

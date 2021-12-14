@@ -3,12 +3,11 @@ package agh.ics.oop;
 import java.util.*;
 
 public class GrassField extends AbstractWorldMap {
-    private final int clumpsOfGrass;
-    public HashMap<Vector2d, Grass> grassPoints = new LinkedHashMap<>();
-    private MapBoundary mapBoundary;
+    private HashMap<Vector2d, Grass> grassPoints = new LinkedHashMap<>();
+    MapVisualizer map = new MapVisualizer(this);
+    private final MapBoundary mapBoundary;
 
     public GrassField(int n) {
-        this.clumpsOfGrass = n;
         this.mapBoundary = new MapBoundary();
         Random random = new Random();
         for (int i = 0; i < n; i++) {
@@ -47,6 +46,21 @@ public class GrassField extends AbstractWorldMap {
         return null;
     }
 
+    @Override
+    public Vector2d[] getAnimalsAndGrass() {
+        Vector2d[] onlyAnimals = super.getAnimalsAndGrass();
+        Vector2d[] grassAndAnimals = new Vector2d[grassPoints.size() + onlyAnimals.length];
+        int index = 0;
+        for (Vector2d key : grassPoints.keySet()) {
+            grassAndAnimals[index] = key;
+            index++;
+        }
+        for (int i = 0; i < onlyAnimals.length; i++) {
+            grassAndAnimals[grassPoints.size() + i] = onlyAnimals[i];
+        }
+        return grassAndAnimals;
+    }
+
     private Grass getGrassAt(Vector2d position) {
         return grassPoints.get(position);
     }
@@ -65,7 +79,6 @@ public class GrassField extends AbstractWorldMap {
 
     @Override
     public String toString() {
-        MapVisualizer map = new MapVisualizer(this);
         return map.draw(getLowerLeft(), getUpperRight());
     }
 }
