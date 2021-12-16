@@ -4,74 +4,96 @@ import agh.ics.oop.*;
 import javafx.application.Application;
 import javafx.geometry.HPos;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.layout.ColumnConstraints;
-import javafx.scene.layout.RowConstraints;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.*;
 import javafx.stage.Stage;
-import javafx.scene.layout.GridPane;
-
-import static java.lang.Math.min;
-import static java.lang.Math.max;
 
 public class App extends Application {
+    GridPane gridPane = new GridPane();
+    MapDirection orientation = MapDirection.NORTH;
+    int width = 50;
+    int height = 50;
+
+    // f r l f b r f l r f f b l
     @Override
     public void start(Stage primaryStage) throws Exception {
         try {
-            MoveDirection[] directions = OptionsParser.parse(new String[]{"f", "b", "r", "l", "f", "f", "r", "r", "f", "f", "f", "f", "f", "f", "f", "f"});
-            Vector2d[] positions = {new Vector2d(2, 2), new Vector2d(3, 4)};
-            GrassField map = new GrassField(2);
-            IEngine engine = new SimulationEngine(directions, map, positions);
-            engine.run();
-
-            GridPane gridPane = new GridPane();
-            gridPane.setGridLinesVisible(true);
-
-            int minX = min(map.getLowerLeft().x, map.getUpperRight().x);
-            int maxX = max(map.getLowerLeft().x, map.getUpperRight().x);
-            int minY = min(map.getLowerLeft().y, map.getUpperRight().y);
-            int maxY = max(map.getLowerLeft().y, map.getUpperRight().y);
-            Label indexZero = new Label("y/x");
-            int width = 20;
-            int height = 20;
-            gridPane.add(indexZero, 0, 0, 1, 1);
-            gridPane.getColumnConstraints().add(new ColumnConstraints(width));
-            gridPane.getRowConstraints().add(new RowConstraints(height));
-
-
-            int starting = 1;
-            int i = minX;
-            while (i <= maxX) {
-                Label c = new Label("" + i);
-                gridPane.add(c, starting, 0, 1, 1);
-                GridPane.setHalignment(c, HPos.CENTER);
-                gridPane.getColumnConstraints().add(new ColumnConstraints(width));
-                i++;
-                starting++;
-            }
-
-            starting = 1;
-            i = maxY;
-            while (i >= minY) {
-                Label r = new Label("" + i);
-                gridPane.add(r, 0, starting, 1, 1);
-                GridPane.setHalignment(r, HPos.CENTER);
-                gridPane.getRowConstraints().add(new RowConstraints(height));
-                i--;
-                starting++;
-            }
-            Vector2d[] grassAndAnimals = map.getAnimalsAndGrass();
-            for (Vector2d position : grassAndAnimals) {
-                Object object = map.objectAt(position);
-                Label label = new Label(object.toString());
-                System.out.println(position);
-                gridPane.add(label, 1 + position.x - minX, 1 + maxY - position.y, 1, 1);
-            }
-
-            Scene scene = new Scene(gridPane, 400, 400);
+            TextField textField = new TextField();
+            Button startButton = getStartButton(textField);
+            Button directionButton = getDirectionButton();
+            HBox hBox = new HBox(gridPane, textField, startButton, directionButton);
+            Scene scene = new Scene(hBox, 700, 700);
             primaryStage.setScene(scene);
             primaryStage.show();
         } catch (IllegalArgumentException exception) {
             System.out.println(exception.getMessage());
         }
+    }
+
+    public void createGrid(GrassField newMap) {
+        int left = newMap.getLowerLeft().x;
+        int right = newMap.getUpperRight().x;
+        int lower = newMap.getLowerLeft().y;
+        int upper = newMap.getUpperRight().y;
+        Label label = new Label("y/x");
+        gridPane.add(label, 0, 0, 1, 1);
+        gridPane.getColumnConstraints().add(new ColumnConstraints(width));
+        gridPane.getRowConstraints().add(new RowConstraints(height));
+        GridPane.setHalignment(label, HPos.CENTER);
+
+        for (int i = 1; i <= right - left + 1; i++) {
+            gridPane.getColumnConstraints().add(new ColumnConstraints(width));
+            label = new Label("" + (left + i - 1));
+            GridPane.setHalignment(label, HPos.CENTER);
+            gridPane.add(label, i, 0, 1, 1);
+        }
+        for (int i = 1; i <= upper - lower + 1; i++) {
+            gridPane.getRowConstraints().add(new RowConstraints(height));
+            label = new Label("" + (upper - i + 1));
+            GridPane.setHalignment(label, HPos.CENTER);
+            gridPane.add(label, 0, i, 1, 1);
+        }
+
+        Vector2d[] grassAndAnimals = newMap.getAnimalsAndGrass();
+        for (Vector2d position : grassAndAnimals) {
+            GuiElementBox vBox = new GuiElementBox((IMapElement) newMap.objectAt(position));
+            label = new Label();
+            GridPane.setHalignment(label, HPos.CENTER);
+            gridPane.add(vBox.vBox, 1 + position.x - left, 1 + upper - position.y, 1, 1);
+        }
+
+    }
+
+    public void renderMap(GrassField newMap) {
+        gridPane.setGridLinesVisible(false);
+        gridPane.getColumnConstraints().clear();
+        gridPane.getRowConstraints().clear();
+        gridPane.getChildren().clear();
+        gridPane.setGridLinesVisible(true);
+        createGrid(newMap);
+    }
+
+    public Button getStartButton(TextField textField) {
+        Button startButton = new Button("Start");
+        startButton.setOnAction((action) -> {
+            String text = textField.getText();
+            MoveDirection[] directions = OptionsParser.parse(text.split(" "));
+            Vector2d[] positions = {new Vector2d(1, 3), new Vector2d(2, -1)};
+            GrassField map = new GrassField(10);
+            IEngine engine = new SimulationEngine(directions, map, positions, this);
+            Thread engineThread = new Thread(engine::run);
+            engineThread.start();
+        });
+        return startButton;
+    }
+
+    public Button getDirectionButton() {
+        Button directionButton = new Button(orientation.toString());
+        directionButton.setOnAction((action) -> {
+            directionButton.setText(orientation.next().toString());
+        });
+        return directionButton;
     }
 }

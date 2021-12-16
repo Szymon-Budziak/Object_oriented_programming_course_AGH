@@ -24,6 +24,14 @@ public class GrassField extends AbstractWorldMap {
     }
 
     @Override
+    public boolean canMoveTo(Vector2d position) {
+        if (this.isOccupied(position)) {
+            return (objectAt(position) instanceof Grass);
+        }
+        return true;
+    }
+
+    @Override
     public boolean place(Animal animal) throws IllegalArgumentException {
         if (super.place(animal)) {
             mapBoundary.addPosition(animal.getPosition());

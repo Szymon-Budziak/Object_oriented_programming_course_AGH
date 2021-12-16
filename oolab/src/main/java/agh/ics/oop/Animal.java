@@ -34,6 +34,16 @@ public class Animal implements IMapElement {
         return this.position;
     }
 
+    @Override
+    public String getImagePath() {
+        return switch (this.getOrientation()) {
+            case NORTH -> "oolab/src/main/resources/north.png";
+            case EAST -> "oolab/src/main/resources/east.png";
+            case SOUTH -> "oolab/src/main/resources/south.png";
+            case WEST -> "oolab/src/main/resources/west.png";
+        };
+    }
+
     public void move(MoveDirection direction) {
         Vector2d newPosition;
         switch (direction) {

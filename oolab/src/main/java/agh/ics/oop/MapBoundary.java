@@ -24,10 +24,14 @@ public class MapBoundary implements IPositionChangeObserver {
     }
 
     public Vector2d getUpperRight() {
-        return xOrder.last().upperRight(yOrder.last());
+        Vector2d upper = yOrder.last();
+        Vector2d right = xOrder.last();
+        return upper.upperRight(right);
     }
 
     public Vector2d getLowerLeft() {
-        return xOrder.first().lowerLeft(yOrder.first());
+        Vector2d lower = yOrder.first();
+        Vector2d left = xOrder.first();
+        return lower.lowerLeft(left);
     }
 }
