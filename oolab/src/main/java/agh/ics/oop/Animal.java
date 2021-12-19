@@ -4,22 +4,19 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class Animal implements IMapElement {
-    private MapDirection orientation = MapDirection.NORTH;
+    private MapDirection orientation;
     private Vector2d position;
     private final IWorldMap map;
     private final List<IPositionChangeObserver> observers = new LinkedList<>();
 
-    public Animal(IWorldMap map, Vector2d initialPosition) {
+    public Animal(IWorldMap map, Vector2d initialPosition, MapDirection orientation) {
         this.map = map;
         this.position = initialPosition;
+        this.orientation = orientation;
     }
 
     public Animal(IWorldMap map) {
-        this(map, new Vector2d(2, 2));
-    }
-
-    public Animal() {
-        this(new RectangularMap(5, 5));
+        this(map, new Vector2d(2, 2), MapDirection.NORTH);
     }
 
     public boolean isAt(Vector2d position) {

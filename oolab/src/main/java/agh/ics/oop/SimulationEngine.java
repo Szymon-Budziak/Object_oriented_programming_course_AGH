@@ -13,13 +13,13 @@ public class SimulationEngine implements IEngine, Runnable {
     private final App app;
     int moveDelay = 1000;
 
-    public SimulationEngine(MoveDirection[] directions, GrassField map, Vector2d[] positions, App app) {
+    public SimulationEngine(MoveDirection[] directions, GrassField map, Vector2d[] positions, App app, MapDirection orientation) {
         this.map = map;
         this.directions = List.of(directions);
         this.animals = new ArrayList<>();
         this.app = app;
         for (Vector2d position : positions) {
-            Animal animal = new Animal(map, position);
+            Animal animal = new Animal(map, position, orientation);
             animals.add(animal);
             map.place(animal);
         }

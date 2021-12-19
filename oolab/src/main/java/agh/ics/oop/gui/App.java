@@ -82,7 +82,7 @@ public class App extends Application {
             MoveDirection[] directions = OptionsParser.parse(text.split(" "));
             Vector2d[] positions = {new Vector2d(1, 3), new Vector2d(2, -1)};
             GrassField map = new GrassField(10);
-            IEngine engine = new SimulationEngine(directions, map, positions, this);
+            IEngine engine = new SimulationEngine(directions, map, positions, this, this.orientation);
             Thread engineThread = new Thread(engine::run);
             engineThread.start();
         });
@@ -92,7 +92,8 @@ public class App extends Application {
     public Button getDirectionButton() {
         Button directionButton = new Button(orientation.toString());
         directionButton.setOnAction((action) -> {
-            directionButton.setText(orientation.next().toString());
+            this.orientation = orientation.next();
+            directionButton.setText(this.orientation.toString());
         });
         return directionButton;
     }
