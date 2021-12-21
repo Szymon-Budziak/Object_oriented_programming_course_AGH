@@ -31,25 +31,17 @@ public class SimulationEngine implements IEngine, Runnable {
 
     @Override
     public void run() {
-        Platform.runLater(() -> {
-            app.renderMap(map);
-        });
-        try {
-            Thread.sleep(moveDelay);
-        } catch (InterruptedException e) {
-            System.out.println(e.getMessage());
-        }
         for (int i = 0; i < directions.size(); i++) {
-            Animal currentAnimal = animals.get(i % animals.size());
-            currentAnimal.move(directions.get(i));
-            Platform.runLater(() -> {
-                app.renderMap(map);
-            });
             try {
                 Thread.sleep(moveDelay);
             } catch (InterruptedException e) {
                 System.out.println(e.getMessage());
             }
+//            Animal currentAnimal = animals.get(i % animals.size());
+//            currentAnimal.move(directions.get(i));
+            Platform.runLater(() -> {
+                app.renderMap(map);
+            });
         }
     }
 }

@@ -3,11 +3,13 @@ package agh.ics.oop.gui;
 import agh.ics.oop.*;
 import javafx.application.Application;
 import javafx.geometry.HPos;
+import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
 public class App extends Application {
@@ -44,25 +46,25 @@ public class App extends Application {
         GridPane.setHalignment(label, HPos.CENTER);
 
         for (int i = 1; i <= right - left + 1; i++) {
-            gridPane.getColumnConstraints().add(new ColumnConstraints(width));
+            this.gridPane.getColumnConstraints().add(new ColumnConstraints(width));
             label = new Label("" + (left + i - 1));
             GridPane.setHalignment(label, HPos.CENTER);
-            gridPane.add(label, i, 0, 1, 1);
+            this.gridPane.add(label, i, 0, 1, 1);
         }
         for (int i = 1; i <= upper - lower + 1; i++) {
-            gridPane.getRowConstraints().add(new RowConstraints(height));
+            this.gridPane.getRowConstraints().add(new RowConstraints(height));
             label = new Label("" + (upper - i + 1));
             GridPane.setHalignment(label, HPos.CENTER);
-            gridPane.add(label, 0, i, 1, 1);
+            this.gridPane.add(label, 0, i, 1, 1);
         }
 
-        Vector2d[] grassAndAnimals = newMap.getAnimalsAndGrass();
-        for (Vector2d position : grassAndAnimals) {
-            GuiElementBox vBox = new GuiElementBox((IMapElement) newMap.objectAt(position));
-            label = new Label();
-            GridPane.setHalignment(label, HPos.CENTER);
-            gridPane.add(vBox.vBox, 1 + position.x - left, 1 + upper - position.y, 1, 1);
-        }
+//        Vector2d[] grassAndAnimals = newMap.getAnimalsAndGrass();
+//        for (Vector2d position : grassAndAnimals) {
+//            GuiElementBox vBox = new GuiElementBox((IMapElement) newMap.objectAt(position));
+//            label = new Label();
+//            GridPane.setHalignment(label, HPos.CENTER);
+//            gridPane.add(vBox.vBox, 1 + position.x - left, 1 + upper - position.y, 1, 1);
+//        }
 
     }
 

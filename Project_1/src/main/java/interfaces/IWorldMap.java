@@ -18,7 +18,7 @@ public interface IWorldMap {
      * @param animal The elements to place on the map.
      * @return True if the elements was placed. The elements cannot be placed if the map is already occupied.
      */
-    boolean place(Animal animal);
+    void place(IMapElement animal);
 
     /**
      * Return true if given position on the map is occupied. Should not be
@@ -37,5 +37,4 @@ public interface IWorldMap {
      * @return Object or null if the position is not occupied.
      */
     Object objectAt(Vector2d position);
-
 }

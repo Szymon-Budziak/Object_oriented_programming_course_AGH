@@ -2,6 +2,8 @@ package enumClasses;
 
 import elements.Vector2d;
 
+import java.util.Random;
+
 public enum MapDirection {
     NORTH,
     NORTHEAST,
@@ -61,6 +63,23 @@ public enum MapDirection {
             case SOUTHWEST -> new Vector2d(-1, -1);
             case WEST -> new Vector2d(-1, 0);
             case NORTHWEST -> new Vector2d(-1, 1);
+        };
+    }
+
+    // Getters
+    public MapDirection setRandomOrientation(){
+        Random random = new Random();
+        int randomOrientation = random.nextInt(8);
+        return switch (randomOrientation) {
+            case 0 -> NORTHWEST;
+            case 1 -> NORTH;
+            case 2 -> NORTHEAST;
+            case 3 -> EAST;
+            case 4 -> SOUTHEAST;
+            case 5 -> SOUTH;
+            case 6 -> SOUTHWEST;
+            case 7 -> WEST;
+            default -> throw new IllegalStateException("Unexpected value: " + randomOrientation);
         };
     }
 }

@@ -1,16 +1,23 @@
 package gui;
 
+import elements.Vector2d;
+import interfaces.IMapElement;
 import interfaces.IWorldMap;
 import javafx.application.Application;
+import javafx.geometry.HPos;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import map.AbstractWorldMap;
 import map.WorldMapWithBoundaries;
 import map.WorldMapWithoutBoundaries;
 import simulation.Simulation;
@@ -26,9 +33,11 @@ public class StartingApp extends Application {
     private TextField dailyEnergyUsageTextField;
     private TextField animalsAtTheBeginningTextField;
     private TextField refreshTimeTextField;
+    private int constraintWidth = 50;
+    private int constraintHeight = 50;
 
     @Override
-    public void start(Stage primaryStage) throws Exception {
+    public void start(Stage primaryStage) {
         try {
             primaryStage.setTitle("Evolution Simulator");
 
@@ -83,13 +92,13 @@ public class StartingApp extends Application {
 
             // Start button
             Button startButton = createStartButton();
-            HBox startButtonBox = new HBox(startButton);
-            startButtonBox.setAlignment(Pos.CENTER);
 
-            VBox vBox = createVbox(welcomeText, mapProperties, heightBox, widthBox, energyProperties, startingEnergyBox,
+            VBox newVbox = new VBox(welcomeText, mapProperties, heightBox, widthBox, energyProperties, startingEnergyBox,
                     dailyEnergyUsageBox, grassProfitBox, jungleRatio, jungleRatioBox, spawningProperties, animalsAtTheBeginningBox,
-                    otherOptions, refreshTimeBox);
-            Scene scene = new Scene(vBox, 700, 700);
+                    otherOptions, refreshTimeBox, startButton);
+            newVbox.setAlignment(Pos.TOP_CENTER);
+            newVbox.setSpacing(15);
+            Scene scene = new Scene(newVbox, 700, 700);
             primaryStage.setScene(scene);
             primaryStage.show();
         } catch (IllegalArgumentException exception) {
@@ -98,18 +107,6 @@ public class StartingApp extends Application {
     }
 
     // Creating JavaFx objects
-    private VBox createVbox(HBox welcomeText, HBox mapProperties, HBox heightBox, HBox widthBox, HBox energyProperties,
-                            HBox startingEnergyBox, HBox dailyEnergyUsageBox, HBox grassProfitBox, HBox jungleRatio,
-                            HBox jungleHeightBox, HBox spawningProperties, HBox animalsAtTheBeginningBox,
-                            HBox otherOptions, HBox refreshTimeBox) {
-        VBox newVbox = new VBox(welcomeText, mapProperties, heightBox, widthBox, energyProperties, startingEnergyBox,
-                dailyEnergyUsageBox, grassProfitBox, jungleRatio, jungleHeightBox, spawningProperties, animalsAtTheBeginningBox,
-                otherOptions, refreshTimeBox);
-        newVbox.setAlignment(Pos.TOP_CENTER);
-        newVbox.setSpacing(15);
-        return newVbox;
-    }
-
     private HBox createHeadLineText(String text, int size) {
         Text newText = new Text(text);
         newText.setFont(Font.font("Arial", FontWeight.BOLD, size));
@@ -136,35 +133,63 @@ public class StartingApp extends Application {
         Button startButton = new Button("Start");
         startButton.setFont(Font.font("Arial", FontWeight.BOLD, 24));
         startButton.setOnAction((action) -> {
-            WorldMapWithBoundaries mapWithBoundaries = new WorldMapWithBoundaries(this.heightTextField.getText(), this.widthTextField.getText(),
-                    this.dailyEnergyUsageTextField.getText(), this.grassProfitTextField.getText(),
-                    this.jungleRatioTextField.getText(),this.refreshTimeTextField.getText());
-            WorldMapWithoutBoundaries mapWithoutBoundaries = new WorldMapWithoutBoundaries(this.heightTextField.getText(), this.widthTextField.getText(),
-                    this.dailyEnergyUsageTextField.getText(), this.grassProfitTextField.getText(),
-                    this.jungleRatioTextField.getText(),this.refreshTimeTextField.getText());
-            Simulation engine = new Simulation(mapWithBoundaries, mapWithoutBoundaries, this,
-                    Integer.parseInt(String.valueOf(this.animalsAtTheBeginningTextField)),
-                    Integer.parseInt(String.valueOf(this.startingEnergyTextField)),
-                    Integer.parseInt(String.valueOf(this.refreshTimeTextField.getText())));
-            Thread engineThread = new Thread(engine::run);
+//            WorldMapWithBoundaries mapWithBoundaries = new WorldMapWithBoundaries(this.heightTextField.getText(), this.widthTextField.getText(),
+//                    this.dailyEnergyUsageTextField.getText(), this.grassProfitTextField.getText(),
+//                    this.jungleRatioTextField.getText());
+//            WorldMapWithoutBoundaries mapWithoutBoundaries = new WorldMapWithoutBoundaries(this.heightTextField.getText(), this.widthTextField.getText(),
+//                    this.dailyEnergyUsageTextField.getText(), this.grassProfitTextField.getText(),
+//                    this.jungleRatioTextField.getText());
+            AbstractWorldMap map = new AbstractWorldMap(Integer.parseInt(heightTextField.getText()), Integer.parseInt(this.widthTextField.getText()),
+                    Integer.parseInt(this.dailyEnergyUsageTextField.getText()), Integer.parseInt(this.grassProfitTextField.getText()),
+                    Integer.parseInt(this.jungleRatioTextField.getText()));
+            Simulation engine = new Simulation(map, this,
+                    Integer.parseInt(this.animalsAtTheBeginningTextField.getText()),
+                    Integer.parseInt(this.startingEnergyTextField.getText()),
+                    Integer.parseInt(this.refreshTimeTextField.getText()));
+            Thread engineThread = new Thread(engine);
             engineThread.start();
         });
         return startButton;
     }
 
     // Creating new map
-    public void createGrid(IWorldMap newMap) {
-        ;
+    public void createGrid(AbstractWorldMap newMap) {
+        int mapLeft = newMap.getMapLowerLeft().x;
+        int mapRight = newMap.getMapUpperRight().x;
+        int mapLower = newMap.getMapLowerLeft().y;
+        int mapUpper = newMap.getMapUpperRight().y;
+
+        Vector2d jungleLowerLeft = newMap.getJungleLowerLeft();
+        Vector2d jungleUpperRight = newMap.getJungleUpperRight();
+        Label label = new Label("y/x");
+        this.gridPane.add(label, 0, 0, 1, 1);
+        VBox newVBox;
+        for (int i = mapLeft; i <= mapRight; i++) {
+            for (int j = mapLower; j <= mapUpper; j++) {
+                Vector2d newPosition = new Vector2d(i, j);
+                newVBox = new VBox();
+                if (newPosition.follows(jungleLowerLeft) && newPosition.precedes(jungleUpperRight)) {
+                    newVBox.setStyle("-fx-background-color: #135E46");
+                } else {
+                    newVBox.setStyle("-fx-background-color: #A1724E");
+                }
+                newVBox.setAlignment(Pos.CENTER);
+                this.gridPane.add(newVBox, i, mapUpper + 1 - j, 1, 1);
+            }
+        }
+        Vector2d[] animalsAndGrasses = newMap.getAnimalsAndGrasses();
+        for (Vector2d position : animalsAndGrasses) {
+            GuiElementBox vBox = new GuiElementBox((IMapElement) newMap.objectAt(position));
+            this.gridPane.add(vBox.vBox, 1 + position.x - mapLeft, 1 + mapUpper - position.y, 1, 1);
+        }
     }
 
-    public void renderMap(IWorldMap newMap) {
-        gridPane.setGridLinesVisible(false);
-        gridPane.getColumnConstraints().clear();
-        gridPane.getRowConstraints().clear();
-        gridPane.getChildren().clear();
-        gridPane.setGridLinesVisible(true);
+    public void renderMap(AbstractWorldMap newMap) {
+        this.gridPane.setGridLinesVisible(false);
+        this.gridPane.getColumnConstraints().clear();
+        this.gridPane.getRowConstraints().clear();
+        this.gridPane.getChildren().clear();
+        this.gridPane.setGridLinesVisible(true);
         createGrid(newMap);
     }
-
-
 }

@@ -7,7 +7,7 @@ public class Genes {
     private int[] animalGenes;
     Random random = new Random();
 
-    // Constructors
+    // Constructor
     public Genes() {
         this.animalGenes = new int[32];
         for (int i = 0; i < this.animalGenes.length; i++) {
@@ -15,9 +15,7 @@ public class Genes {
         }
         Arrays.sort(animalGenes);
     }
-    public Genes(int[] genes){
 
-    }
 
     public Genes(Genes genes1, Genes genes2, int energy1, int energy2) {
         int[] animal1Genes = getGenes(genes1);
@@ -53,12 +51,12 @@ public class Genes {
 
 
     // Getters
-    private int[] getGenes(Genes genes) {
+    public int[] getGenes(Genes genes) {
         return genes.animalGenes;
     }
 
-    private int getRandomGene() {
-        int randomGene = random.nextInt(32);
+    public int getRandomGene() {
+        int randomGene = random.nextInt(33);
         return this.animalGenes[randomGene];
     }
 
@@ -66,11 +64,6 @@ public class Genes {
     // toString
     @Override
     public String toString() {
-        String result = "";
-        for (int i = 0; i < 32; i++) {
-            result += Integer.toString(this.animalGenes[i]);
-            result += " ";
-        }
-        return result;
+        return Arrays.toString(this.animalGenes);
     }
 }

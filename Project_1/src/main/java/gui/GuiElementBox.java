@@ -10,11 +10,10 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 
 public class GuiElementBox {
-    VBox vBox = new VBox();
+    public VBox vBox = new VBox();
 
     public GuiElementBox(IMapElement element) {
         try {
-            String a = element.getImagePath();
             Image image = new Image(new FileInputStream(element.getImagePath()));
             ImageView imageView = new ImageView(image);
             imageView.setFitWidth(20);
