@@ -1,6 +1,6 @@
 package enumClasses;
 
-import animal.Vector2d;
+import elements.Vector2d;
 
 public enum MapDirection {
     NORTH,

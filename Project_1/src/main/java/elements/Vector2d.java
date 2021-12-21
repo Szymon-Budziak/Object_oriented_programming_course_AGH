@@ -1,4 +1,4 @@
-package animal;
+package elements;
 
 import java.util.Objects;
 
@@ -6,11 +6,13 @@ public class Vector2d {
     public final int x;
     public final int y;
 
+    // Constructor
     public Vector2d(int x, int y) {
         this.x = x;
         this.y = y;
     }
 
+    // Functions
     public boolean precedes(Vector2d other) {
         return this.x <= other.x && this.y <= other.y;
     }
@@ -41,6 +43,7 @@ public class Vector2d {
         return Objects.hash(this.x, this.y);
     }
 
+    // toString
     public String toString() {
         return "(" + this.x + ", " + this.y + ")";
     }
