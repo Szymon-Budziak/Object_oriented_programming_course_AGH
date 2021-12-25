@@ -4,8 +4,9 @@ import enumClasses.MapDirection;
 import enumClasses.MoveDirection;
 import interfaces.IMapElement;
 import interfaces.IPositionChangeObserver;
-import javafx.scene.paint.Color;
 import map.AbstractWorldMap;
+import map.WorldMapWithBoundaries;
+import map.WorldMapWithoutBoundaries;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -14,17 +15,17 @@ import java.util.List;
 public class Animal implements IMapElement {
     private final AbstractWorldMap map;
     private int energy;
-    private int startingEnergy;
+    private final int startingEnergy;
     private MapDirection orientation;
     private Vector2d position;
-    private Genes genes;
+    private final Genes genes;
     private ArrayList<Animal> children;
     private int bornDate;
     private final List<IPositionChangeObserver> observers = new LinkedList<>();
     private int deathDate;
     private int age;
 
-    // Constructor
+    // Constructors
     public Animal(AbstractWorldMap map, int energy, int era) {
         this.map = map;
         this.energy = energy;
@@ -49,7 +50,6 @@ public class Animal implements IMapElement {
         this.genes = genes;
         this.age = 0;
         this.children = new ArrayList<>();
-
     }
 
     // Getters
@@ -60,49 +60,74 @@ public class Animal implements IMapElement {
 
     @Override
     public String getImagePath() {
-        return "Project_1/src/main/resources/animal.png";
+        if (this.energy >= 0.75 * this.startingEnergy)
+            return "Project_1/src/main/resources/green_animal.png";
+        else if (this.energy >= 0.5 * this.startingEnergy)
+            return "Project_1/src/main/resources/light_green_animal.png";
+        else if (this.energy >= 0.25 * this.startingEnergy)
+            return "Project_1/src/main/resources/orange_animal.png";
+        else
+            return "Project_1/src/main/resources/red_animal.png";
     }
 
     public boolean isDead() {
         return this.energy <= 0;
     }
 
-    public int getBornDate() {
-        return this.bornDate;
-    }
-
     public int getEnergy() {
         return this.energy;
     }
-    public int getStartingEnergy(){
+
+    public int getStartingEnergy() {
         return this.startingEnergy;
     }
 
     // Setters
-    public void setDeathDate(int deathDate) {
-        this.deathDate = deathDate;
-    }
-
-    public void setEnergy(int energy) {
+    public void increaseEnergy(int energy) {
         this.energy += energy;
     }
 
-    // Move
-    public void move(MoveDirection direction) {
+    public void reduceEnergy(int energy) {
+        this.energy -= energy;
+    }
+
+    // Animal specific functions - move and rotate
+    public void rotate() {
+        int numberOfRotations = this.genes.getRandomGene();
+        if (numberOfRotations == 0)
+            this.move(MoveDirection.FORWARD);
+        else if (numberOfRotations == 4)
+            this.move((MoveDirection.BACKWARD));
+        else {
+            for (int i = 0; i < numberOfRotations; i++) {
+                this.move(MoveDirection.RIGHT);
+            }
+        }
+    }
+
+    private void move(MoveDirection direction) {
         this.age += 1;
         switch (direction) {
             case RIGHT -> this.orientation = orientation.next();
             case LEFT -> this.orientation = orientation.previous();
             case FORWARD -> {
                 Vector2d newPosition = position.add(orientation.toUnitVector());
-                if (this.map.canMoveTo(newPosition)) {
+                if (this.map instanceof WorldMapWithBoundaries && this.map.canMoveTo(newPosition)) {
+                    positionChanged(this, this.position, newPosition);
+                    this.position = newPosition;
+                } else if (this.map instanceof WorldMapWithoutBoundaries) {
+                    newPosition = this.map.teleport(newPosition);
                     positionChanged(this, this.position, newPosition);
                     this.position = newPosition;
                 }
             }
             case BACKWARD -> {
                 Vector2d newPosition = position.subtract(orientation.toUnitVector());
-                if (this.map.canMoveTo(newPosition)) {
+                if (this.map instanceof WorldMapWithBoundaries && this.map.canMoveTo(newPosition)) {
+                    positionChanged(this, this.position, newPosition);
+                    this.position = newPosition;
+                } else if (this.map instanceof WorldMapWithoutBoundaries) {
+                    newPosition = this.map.teleport(newPosition);
                     positionChanged(this, this.position, newPosition);
                     this.position = newPosition;
                 }
@@ -111,14 +136,7 @@ public class Animal implements IMapElement {
         }
     }
 
-    public void rotate() {
-        int numberOfRotations = this.genes.getRandomGene();
-        for (int i = 0; i < numberOfRotations; i++) {
-            this.move(MoveDirection.RIGHT);
-        }
-    }
-
-    // Observers
+    // Animal specific function - observers
     private void positionChanged(IMapElement element, Vector2d oldPosition, Vector2d newPosition) {
         for (IPositionChangeObserver observer : observers) {
             observer.positionChanged(element, oldPosition, newPosition);
@@ -133,7 +151,7 @@ public class Animal implements IMapElement {
         observers.remove(observer);
     }
 
-    // Reproduction
+    // Animal specific function - reproduction
     public Animal reproduction(Animal otherAnimal) {
         int childEnergy = (int) (0.25 * this.energy + 0.25 * otherAnimal.energy);
         this.energy = (int) (this.energy * 0.75);
@@ -143,30 +161,5 @@ public class Animal implements IMapElement {
         this.children.add(child);
         otherAnimal.children.add(child);
         return child;
-    }
-
-    public Color energyInColor() {
-        if (this.energy <= 0) return new Color(204, 0, 0, 1);
-        else if (this.energy < 0.35 * this.startingEnergy) return new Color(255, 51, 51, 1);
-        else if (this.energy < 0.70 * this.startingEnergy) return new Color(105, 255, 102, 1);
-        else return new Color(0, 204, 0, 1);
-
-    }
-
-    //toString
-    @Override
-    public String toString() {
-        return "Animal{" +
-                "map=" + map +
-                ", energy=" + energy +
-                ", orientation=" + orientation +
-                ", position=" + position +
-                ", genes=" + genes +
-                ", children=" + children +
-                ", bornDate=" + bornDate +
-                ", observers=" + observers +
-                ", deathDate=" + deathDate +
-                ", age=" + age +
-                '}';
     }
 }

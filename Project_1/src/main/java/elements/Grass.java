@@ -5,6 +5,7 @@ import interfaces.IMapElement;
 public class Grass implements IMapElement {
     private final Vector2d position;
 
+    // Constructor
     public Grass(Vector2d position) {
         this.position = position;
     }
@@ -17,12 +18,6 @@ public class Grass implements IMapElement {
 
     @Override
     public String getImagePath() {
-        return "Project_1/src/main/resources/palm.png";
-    }
-
-    // toString
-    @Override
-    public String toString() {
-        return "*";
+        return "Project_1/src/main/resources/grass.png";
     }
 }

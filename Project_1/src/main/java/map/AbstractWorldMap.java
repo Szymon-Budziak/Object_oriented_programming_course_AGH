@@ -9,8 +9,6 @@ import interfaces.IWorldMap;
 
 import java.util.*;
 
-import static java.lang.Math.abs;
-
 public class AbstractWorldMap implements IWorldMap, IPositionChangeObserver {
     protected int era;
     protected final int mapHeight;
@@ -29,12 +27,10 @@ public class AbstractWorldMap implements IWorldMap, IPositionChangeObserver {
     private final Vector2d jungleLowerLeft;
     private final Vector2d mapUpperRight;
     private final Vector2d jungleUpperRight;
-    private final ArrayList<Vector2d> freeAnimalPositions;
     private final ArrayList<Vector2d> freeGrassPositions;
 
     // Constructor
-    public AbstractWorldMap(int mapHeight, int mapWidth, int dailyEnergyUsage, int grassProfit,
-                            double jungleRatio) {
+    public AbstractWorldMap(int mapHeight, int mapWidth, int dailyEnergyUsage, int grassProfit, double jungleRatio) {
         this.era = 1;
         this.mapHeight = mapHeight;
         this.mapWidth = mapWidth;
@@ -45,8 +41,8 @@ public class AbstractWorldMap implements IWorldMap, IPositionChangeObserver {
         this.mapUpperRight = new Vector2d(this.mapWidth - 1, this.mapHeight - 1);
 
         // Jungle set up
-        this.jungleHeight = (int) (this.mapHeight * this.jungleRatio);
-        this.jungleWidth = (int) (this.mapWidth * this.jungleRatio);
+        this.jungleHeight = (int) Math.round(this.mapHeight * this.jungleRatio);
+        this.jungleWidth = (int) Math.round(this.mapWidth * this.jungleRatio);
         int jungleLowerLeftX = 0;
         int jungleLowerLeftY = 0;
         int jungleUpperRightX = this.mapWidth - 1;
@@ -67,45 +63,35 @@ public class AbstractWorldMap implements IWorldMap, IPositionChangeObserver {
         this.jungleLowerLeft = new Vector2d(jungleLowerLeftX, jungleLowerLeftY);
         this.jungleUpperRight = new Vector2d(jungleUpperRightX, jungleUpperRightY);
 
-        this.freeAnimalPositions = new ArrayList<>();
         this.freeGrassPositions = new ArrayList<>();
-        for (int i = this.mapLowerLeft.x; i < this.mapUpperRight.x; i++) {
-            for (int j = this.mapLowerLeft.y; i < this.mapUpperRight.y; i++) {
-                this.freeAnimalPositions.add(new Vector2d(i, j));
+        for (int i = this.mapLowerLeft.getX(); i <= this.mapUpperRight.getX(); i++) {
+            for (int j = this.mapLowerLeft.getY(); j <= this.mapUpperRight.getY(); j++) {
                 this.freeGrassPositions.add(new Vector2d(i, j));
             }
         }
-
-
     }
 
+    // AbstractWorldMap specific functions
     @Override
     public void positionChanged(IMapElement element, Vector2d oldPosition, Vector2d newPosition) {
         removeAnimalFromHashMap((Animal) element, oldPosition);
         addAnimalToHashMap((Animal) element, newPosition);
     }
 
-    // TODO canMoveTo to be like can outside bounds
     @Override
     public boolean canMoveTo(Vector2d position) {
-//        Vector2d newPosition = convertToMapWithoutBoundaries(position);
-//        LinkedList<Animal> animalsOnPositions = this.animals.get(position);
-//        if (animalsOnPositions == null) return true;
-//
-//        return true;
-        ;
-        return true;
+        return position.follows(this.mapLowerLeft) && position.precedes(this.mapUpperRight);
     }
 
     @Override
     public void place(IMapElement element) {
-        Vector2d position = convertToMapWithoutBoundaries(element.getPosition());
+        Vector2d position = element.getPosition();
         if (element instanceof Animal) {
             addAnimalToHashMap((Animal) element, position);
             this.animalsList.add((Animal) element);
             ((Animal) element).addObserver(this);
         } else {
-            if (grasses.get(position) == null) {
+            if (this.grasses.get(position) == null) {
                 this.grasses.put(position, (Grass) element);
             }
             this.grassList.add((Grass) element);
@@ -123,8 +109,8 @@ public class AbstractWorldMap implements IWorldMap, IPositionChangeObserver {
         }
     }
 
-    public void removeAnimalFromHashMap(Animal animal, Vector2d position) {
-        LinkedList<Animal> animalsOnPositions = animals.get(position);
+    private void removeAnimalFromHashMap(Animal animal, Vector2d position) {
+        LinkedList<Animal> animalsOnPositions = this.animals.get(position);
         if (animalsOnPositions != null) {
             animalsOnPositions.remove(animal);
             if (animalsOnPositions.size() == 0)
@@ -140,39 +126,43 @@ public class AbstractWorldMap implements IWorldMap, IPositionChangeObserver {
 
     @Override
     public Object objectAt(Vector2d position) {
-        Vector2d newPosition = convertToMapWithoutBoundaries(position);
-        LinkedList<Animal> positions = this.animals.get(newPosition);
+        LinkedList<Animal> positions = this.animals.get(position);
         if (positions == null || positions.size() == 0) {
             return this.grasses.get(position);
         } else
             return positions.getFirst();
     }
 
-    private Vector2d convertToMapWithoutBoundaries(Vector2d oldPosition) {
-        int newY;
-        int newX;
-        if (oldPosition.y < this.mapLowerLeft.y) {
-            newY = (this.mapHeight - abs(oldPosition.y % this.mapHeight)) % this.mapHeight;
-        } else {
-            newY = abs(oldPosition.y % this.mapHeight);
-        }
-        if (oldPosition.x < this.mapLowerLeft.x) {
-            newX = (this.mapWidth - abs(oldPosition.x % this.mapWidth)) % this.mapWidth;
-        } else {
-            newX = abs(oldPosition.x % this.mapWidth);
-        }
-        return new Vector2d(newX, newY);
+    public Vector2d teleport(Vector2d position) {
+        if (position.getX() < this.mapLowerLeft.getX()) {
+            if (position.getY() < this.mapLowerLeft.getY())
+                position = new Vector2d(this.mapUpperRight.getX(), this.mapUpperRight.getY());
+            else if (position.getY() > this.mapUpperRight.getY())
+                position = new Vector2d(this.mapUpperRight.getX(), this.mapLowerLeft.getY());
+            else
+                position = new Vector2d(this.mapUpperRight.getX(), position.getY());
+        } else if (position.getX() > this.mapUpperRight.getX()) {
+            if (position.getY() < this.mapLowerLeft.getY())
+                position = new Vector2d(this.mapLowerLeft.getX(), this.mapUpperRight.getY());
+            else if (position.getY() > this.mapUpperRight.getY())
+                position = new Vector2d(this.mapLowerLeft.getX(), this.mapLowerLeft.getY());
+            else
+                position = new Vector2d(this.mapLowerLeft.getX(), position.getY());
+        } else if (position.getY() > this.mapUpperRight.getY())
+            position = new Vector2d(position.getX(), this.mapLowerLeft.getY());
+        else if (position.getY() < this.mapLowerLeft.getY())
+            position = new Vector2d(position.getX(), this.mapUpperRight.getY());
+        return position;
     }
 
     // Map functions
     public void removeDeadAnimals() {
-        this.era += 1;
         for (int i = 0; i < this.animalsList.size(); i++) {
             Animal animal = this.animalsList.get(i);
             if (animal.isDead()) {
                 removeAnimalFromHashMap(animal, animal.getPosition());
                 animal.removeObserver(this);
-                animalsList.remove(animal);
+                this.animalsList.remove(animal);
             }
         }
 //        Map<Vector2d, LinkedList<Animal>> animalsToRemove = new HashMap<>();
@@ -195,10 +185,9 @@ public class AbstractWorldMap implements IWorldMap, IPositionChangeObserver {
 //            for (Animal animal : value) {
 //                this.animals.get(key).remove(animal);
 //            }
-//        });
+//        })
     }
 
-    // TODO Change animalsList to hashmap
     public void turnAndMoveAnimals() {
         for (Animal animal : this.animalsList) {
             animal.rotate();
@@ -211,7 +200,7 @@ public class AbstractWorldMap implements IWorldMap, IPositionChangeObserver {
             LinkedList<Animal> animalsOnPositions = this.animals.get(tuft.getPosition());
             if (animalsOnPositions != null && animalsOnPositions.size() > 0) {
                 for (Animal animal : animalsOnPositions) {
-                    animal.setEnergy(this.grassProfit / animalsOnPositions.size());
+                    animal.increaseEnergy(Math.round(this.grassProfit / animalsOnPositions.size()));
                     grassesToRemove.add(tuft);
                 }
             }
@@ -219,17 +208,21 @@ public class AbstractWorldMap implements IWorldMap, IPositionChangeObserver {
         for (Grass tuft : grassesToRemove) {
             this.grasses.remove(tuft.getPosition());
             this.grassList.remove(tuft);
+            this.freeGrassPositions.add(tuft.getPosition());
         }
     }
 
     public void reproduction() {
         Animal father = null;
         Animal mother = null;
-        int theStrongest = 0;
-        int secondStrongest = 0;
+        int theStrongest;
+        int secondStrongest;
         for (LinkedList<Animal> animals : this.animals.values()) {
             if (animals != null && animals.size() >= 2) {
+                theStrongest = 0;
+                secondStrongest = 0;
                 for (Animal animal : animals) {
+                    animal.getEnergy();
                     if (animal.getEnergy() > theStrongest) {
                         theStrongest = animal.getEnergy();
                         father = animal;
@@ -239,14 +232,12 @@ public class AbstractWorldMap implements IWorldMap, IPositionChangeObserver {
                     }
                 }
                 if (father != null && mother != null) {
-                    if (father.getEnergy() > father.getStartingEnergy() && mother.getEnergy() > mother.getStartingEnergy()) {
+                    if (father.getEnergy() > father.getStartingEnergy() / 2 && mother.getEnergy() > mother.getStartingEnergy() / 2) {
                         Animal child = father.reproduction(mother);
-                        place(child);
+                        this.place(child);
                     }
-
                 }
             }
-
         }
     }
 
@@ -255,29 +246,33 @@ public class AbstractWorldMap implements IWorldMap, IPositionChangeObserver {
         boolean inStep = false;
         ArrayList<Vector2d> copiedGrass = (ArrayList<Vector2d>) this.freeGrassPositions.clone();
         while (copiedGrass.size() > 0) {
+            if (inJungle && inStep) {
+                break;
+            }
             int random = (int) (Math.random() * copiedGrass.size());
             Vector2d position = copiedGrass.get(random);
             copiedGrass.remove(position);
             if (position.follows(this.jungleLowerLeft) && position.precedes(this.jungleUpperRight)) {
-                if (!inJungle) {
+                if (!inJungle && !this.isOccupied(position)) {
                     Grass newGrass = new Grass(position);
                     this.grasses.put(position, newGrass);
                     inJungle = true;
                     this.freeGrassPositions.remove(position);
                 }
-            } else if (!inStep) {
+            } else if (!inStep && !this.isOccupied(position)) {
                 Grass newGrass = new Grass(position);
                 this.grasses.put(position, newGrass);
                 inStep = true;
                 this.freeGrassPositions.remove(position);
             }
-
         }
-
     }
 
-    protected void changeEnergy() {
-        ;
+    public void changeEnergy() {
+        this.era += 1;
+        for (Animal animal : this.animalsList) {
+            animal.reduceEnergy(this.dailyEnergyUsage);
+        }
     }
 
     // Getters
@@ -298,17 +293,21 @@ public class AbstractWorldMap implements IWorldMap, IPositionChangeObserver {
     }
 
     public Vector2d[] getAnimalsAndGrasses() {
-        Vector2d[] animalsAndGrasses = new Vector2d[this.animals.size() + this.grasses.size()];
+        Vector2d[] grassesAndAnimals = new Vector2d[this.animals.size() + this.grasses.size()];
         int index = 0;
-        for (Vector2d key : this.animals.keySet()) {
-            animalsAndGrasses[index] = key;
-            index++;
-        }
         for (Vector2d key : this.grasses.keySet()) {
-            animalsAndGrasses[index] = key;
+            grassesAndAnimals[index] = key;
             index++;
         }
-        return animalsAndGrasses;
+        for (Vector2d key : this.animals.keySet()) {
+            grassesAndAnimals[index] = key;
+            index++;
+        }
+        return grassesAndAnimals;
+    }
+
+    public List<Animal> getAnimals() {
+        return this.animalsList;
     }
 
     public int getEra() {

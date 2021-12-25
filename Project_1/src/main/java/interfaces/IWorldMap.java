@@ -1,6 +1,5 @@
 package interfaces;
 
-import elements.Animal;
 import elements.Vector2d;
 
 public interface IWorldMap {

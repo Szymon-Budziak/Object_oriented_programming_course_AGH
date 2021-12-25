@@ -14,19 +14,7 @@ public enum MapDirection {
     WEST,
     NORTHWEST;
 
-    public String toString() {
-        return switch (this) {
-            case NORTH -> "↑";
-            case NORTHEAST -> "↗";
-            case EAST -> "→";
-            case SOUTHEAST -> "↘";
-            case SOUTH -> "↓";
-            case SOUTHWEST -> "↙";
-            case WEST -> "←";
-            case NORTHWEST -> "↖";
-        };
-    }
-
+    // MapDirection specific functions - next, previous, toUnitVector
     public MapDirection next() {
         return switch (this) {
             case NORTH -> NORTHEAST;
@@ -66,8 +54,8 @@ public enum MapDirection {
         };
     }
 
-    // Getters
-    public MapDirection setRandomOrientation(){
+    // Setter
+    public MapDirection setRandomOrientation() {
         Random random = new Random();
         int randomOrientation = random.nextInt(8);
         return switch (randomOrientation) {
@@ -80,6 +68,20 @@ public enum MapDirection {
             case 6 -> SOUTHWEST;
             case 7 -> WEST;
             default -> throw new IllegalStateException("Unexpected value: " + randomOrientation);
+        };
+    }
+
+    // toString
+    public String toString() {
+        return switch (this) {
+            case NORTH -> "↑";
+            case NORTHEAST -> "↗";
+            case EAST -> "→";
+            case SOUTHEAST -> "↘";
+            case SOUTH -> "↓";
+            case SOUTHWEST -> "↙";
+            case WEST -> "←";
+            case NORTHWEST -> "↖";
         };
     }
 }

@@ -6,8 +6,8 @@ import java.util.Random;
 import static java.lang.Math.abs;
 
 public class Vector2d {
-    public final int x;
-    public final int y;
+    private final int x;
+    private final int y;
 
     // Constructor
     public Vector2d(int x, int y) {
@@ -15,17 +15,26 @@ public class Vector2d {
         this.y = y;
     }
 
+    // Getters
+    public int getX() {
+        return this.x;
+    }
+
+    public int getY() {
+        return this.y;
+    }
+
     // Setters
     public Vector2d setRandomPosition(Vector2d mapLowerLeft, Vector2d mapUpperRight) {
         Random random = new Random();
-        int totalHeight = abs(mapUpperRight.y - mapLowerLeft.y);
-        int totalWidth = abs(mapUpperRight.x - mapLowerLeft.x);
+        int totalHeight = abs(mapUpperRight.y - mapLowerLeft.y) + 1;
+        int totalWidth = abs(mapUpperRight.x - mapLowerLeft.x) + 1;
         int randomY = random.nextInt(totalWidth);
         int randomX = random.nextInt(totalHeight);
         return new Vector2d(randomX, randomY);
     }
 
-    // Functions
+    // Vector2d specific functions
     public boolean precedes(Vector2d other) {
         return this.x <= other.x && this.y <= other.y;
     }
@@ -42,6 +51,7 @@ public class Vector2d {
         return new Vector2d(this.x - other.x, this.y - other.y);
     }
 
+    // Equals and hasCode
     @Override
     public boolean equals(Object other) {
         if (other instanceof Vector2d) {
@@ -54,10 +64,5 @@ public class Vector2d {
     @Override
     public int hashCode() {
         return Objects.hash(this.x, this.y);
-    }
-
-    // toString
-    public String toString() {
-        return "(" + this.x + ", " + this.y + ")";
     }
 }

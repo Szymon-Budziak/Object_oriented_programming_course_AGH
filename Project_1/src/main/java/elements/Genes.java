@@ -4,10 +4,10 @@ import java.util.Arrays;
 import java.util.Random;
 
 public class Genes {
-    private int[] animalGenes;
+    private final int[] animalGenes;
     Random random = new Random();
 
-    // Constructor
+    // Constructors
     public Genes() {
         this.animalGenes = new int[32];
         for (int i = 0; i < this.animalGenes.length; i++) {
@@ -16,14 +16,14 @@ public class Genes {
         Arrays.sort(animalGenes);
     }
 
-
     public Genes(Genes genes1, Genes genes2, int energy1, int energy2) {
         int[] animal1Genes = getGenes(genes1);
         int[] animal2Genes = getGenes(genes2);
+        this.animalGenes = new int[32];
         if (animal1Genes.length != animal2Genes.length)
             throw new IllegalArgumentException("Genes have different size.");
         int totalEnergy = energy1 + energy2;
-        int dividedGenes1 = (int) (energy1 / totalEnergy * 32);
+        int dividedGenes1 = (int) ((double) energy1 / (double) totalEnergy * 32);
         int dividedGenes2 = 32 - dividedGenes1;
         int division = random.nextInt(2);
         int size = 0;
@@ -51,19 +51,12 @@ public class Genes {
 
 
     // Getters
-    public int[] getGenes(Genes genes) {
+    private int[] getGenes(Genes genes) {
         return genes.animalGenes;
     }
 
     public int getRandomGene() {
-        int randomGene = random.nextInt(33);
+        int randomGene = random.nextInt(32);
         return this.animalGenes[randomGene];
-    }
-
-
-    // toString
-    @Override
-    public String toString() {
-        return Arrays.toString(this.animalGenes);
     }
 }

@@ -3,14 +3,13 @@ package map;
 import elements.Vector2d;
 
 public class WorldMapWithBoundaries extends AbstractWorldMap {
-
-    public WorldMapWithBoundaries(String mapHeight, String mapWidth, String dailyEnergyUsage,
-                                  String grassProfit, String jungleRatio) {
+    // Constructor
+    public WorldMapWithBoundaries(String mapHeight, String mapWidth, String dailyEnergyUsage, String grassProfit, String jungleRatio) {
         super(Integer.parseInt(mapHeight), Integer.parseInt(mapWidth), Integer.parseInt(dailyEnergyUsage),
                 Integer.parseInt(grassProfit), Double.parseDouble(jungleRatio));
-
     }
 
+    // WorldMapWithBoundaries specific functions
     @Override
     public void removeDeadAnimals() {
         super.removeDeadAnimals();
@@ -18,7 +17,7 @@ public class WorldMapWithBoundaries extends AbstractWorldMap {
 
     @Override
     public void turnAndMoveAnimals() {
-
+        super.turnAndMoveAnimals();
     }
 
     @Override
@@ -42,7 +41,6 @@ public class WorldMapWithBoundaries extends AbstractWorldMap {
     }
 
     // Getters
-
     @Override
     public Vector2d getMapLowerLeft() {
         return super.getMapLowerLeft();
