@@ -3,29 +3,26 @@ package agh.ics.oop.gui;
 import agh.ics.oop.*;
 import javafx.application.Application;
 import javafx.geometry.HPos;
-import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.*;
-import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
 public class App extends Application {
-    GridPane gridPane = new GridPane();
-    MapDirection orientation = MapDirection.NORTH;
-    int width = 50;
-    int height = 50;
+    private GridPane gridPane = new GridPane();
+    private MapDirection orientation = MapDirection.NORTH;
+    private int width = 50;
+    private int height = 50;
 
-    // f r l f b r f l r f f b l
     @Override
-    public void start(Stage primaryStage) throws Exception {
+    public void start(Stage primaryStage) {
         try {
             TextField textField = new TextField();
             Button startButton = getStartButton(textField);
             Button directionButton = getDirectionButton();
-            HBox hBox = new HBox(gridPane, textField, startButton, directionButton);
+            HBox hBox = new HBox(this.gridPane, textField, startButton, directionButton);
             Scene scene = new Scene(hBox, 700, 700);
             primaryStage.setScene(scene);
             primaryStage.show();
@@ -40,40 +37,37 @@ public class App extends Application {
         int lower = newMap.getLowerLeft().y;
         int upper = newMap.getUpperRight().y;
         Label label = new Label("y/x");
-        gridPane.add(label, 0, 0, 1, 1);
-        gridPane.getColumnConstraints().add(new ColumnConstraints(width));
-        gridPane.getRowConstraints().add(new RowConstraints(height));
+        this.gridPane.add(label, 0, 0, 1, 1);
+        this.gridPane.getColumnConstraints().add(new ColumnConstraints(this.width));
+        this.gridPane.getRowConstraints().add(new RowConstraints(this.height));
         GridPane.setHalignment(label, HPos.CENTER);
-
         for (int i = 1; i <= right - left + 1; i++) {
-            this.gridPane.getColumnConstraints().add(new ColumnConstraints(width));
+            this.gridPane.getColumnConstraints().add(new ColumnConstraints(this.width));
             label = new Label("" + (left + i - 1));
             GridPane.setHalignment(label, HPos.CENTER);
             this.gridPane.add(label, i, 0, 1, 1);
         }
         for (int i = 1; i <= upper - lower + 1; i++) {
-            this.gridPane.getRowConstraints().add(new RowConstraints(height));
+            this.gridPane.getRowConstraints().add(new RowConstraints(this.height));
             label = new Label("" + (upper - i + 1));
             GridPane.setHalignment(label, HPos.CENTER);
             this.gridPane.add(label, 0, i, 1, 1);
         }
-
-//        Vector2d[] grassAndAnimals = newMap.getAnimalsAndGrass();
-//        for (Vector2d position : grassAndAnimals) {
-//            GuiElementBox vBox = new GuiElementBox((IMapElement) newMap.objectAt(position));
-//            label = new Label();
-//            GridPane.setHalignment(label, HPos.CENTER);
-//            gridPane.add(vBox.vBox, 1 + position.x - left, 1 + upper - position.y, 1, 1);
-//        }
-
+        Vector2d[] grassAndAnimals = newMap.getAnimalsAndGrass();
+        for (Vector2d position : grassAndAnimals) {
+            GuiElementBox vBox = new GuiElementBox((IMapElement) newMap.objectAt(position));
+            label = new Label();
+            GridPane.setHalignment(label, HPos.CENTER);
+            this.gridPane.add(vBox.vBox, 1 + position.x - left, 1 + upper - position.y, 1, 1);
+        }
     }
 
     public void renderMap(GrassField newMap) {
-        gridPane.setGridLinesVisible(false);
-        gridPane.getColumnConstraints().clear();
-        gridPane.getRowConstraints().clear();
-        gridPane.getChildren().clear();
-        gridPane.setGridLinesVisible(true);
+        this.gridPane.setGridLinesVisible(false);
+        this.gridPane.getColumnConstraints().clear();
+        this.gridPane.getRowConstraints().clear();
+        this.gridPane.getChildren().clear();
+        this.gridPane.setGridLinesVisible(true);
         createGrid(newMap);
     }
 
@@ -94,7 +88,7 @@ public class App extends Application {
     public Button getDirectionButton() {
         Button directionButton = new Button(orientation.toString());
         directionButton.setOnAction((action) -> {
-            this.orientation = orientation.next();
+            this.orientation = this.orientation.next();
             directionButton.setText(this.orientation.toString());
         });
         return directionButton;
