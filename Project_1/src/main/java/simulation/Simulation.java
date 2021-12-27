@@ -3,7 +3,6 @@ package simulation;
 import elements.Animal;
 import gui.App;
 import javafx.application.Platform;
-import map.AbstractWorldMap;
 import map.WorldMapWithBoundaries;
 import map.WorldMapWithoutBoundaries;
 
@@ -19,7 +18,7 @@ public class Simulation implements Runnable {
 
     // Constructor
     public Simulation(WorldMapWithBoundaries mapWithBoundaries, WorldMapWithoutBoundaries mapWithoutBoundaries, App app,
-                      int animalsAtTheBeginning, int startingEnergy, int timeDelay) {
+                      int animalsAtTheBeginning, int startingEnergy, int timeDelay, String magiSimulation) {
         this.mapWithBoundaries = mapWithBoundaries;
         this.mapWithoutBoundaries = mapWithoutBoundaries;
         this.app = app;
@@ -44,53 +43,47 @@ public class Simulation implements Runnable {
                 i++;
             }
         }
+//        if (this.animalsAtTheBeginning == 5 && magiSimulation.toLowerCase().equals("yes"))
+//            this.mapWithBoundaries.placeMagicAnimals(this.startingEnergy);
+//            this.mapWithoutBoundaries.placeMagicAnimals(this.startingEnergy);
     }
 
     // Simulation specific function - run
     @Override
     public void run() {
         while (this.mapWithBoundaries.getAnimals().size() > 0 || this.mapWithoutBoundaries.getAnimals().size() > 0) {
+            Platform.runLater(() -> {
+                this.app.renderMap(this.mapWithBoundaries, false);
+                this.app.renderMap(this.mapWithoutBoundaries, false);
+            });
             try {
                 Thread.sleep(this.timeDelay);
             } catch (InterruptedException e) {
                 System.out.println(e.getMessage());
             }
-            // Map With Boundaries
-            if (this.mapWithBoundaries.getAnimals().size() > 0) {
-                fullDayOfAnimalsLive(this.mapWithBoundaries);
-            } else
-                Platform.runLater(() -> {
-                    this.app.renderMap(this.mapWithBoundaries, true);
-                });
-            if (this.mapWithoutBoundaries.getAnimals().size() > 0) {
-                fullDayOfAnimalsLive(this.mapWithoutBoundaries);
-            } else
-                Platform.runLater(() -> {
-                    this.app.renderMap(this.mapWithoutBoundaries, true);
-                });
+            // Remove dead animals
+            this.mapWithBoundaries.removeDeadAnimals();
+            this.mapWithoutBoundaries.removeDeadAnimals();
+
+            // Turn and move
+            this.mapWithBoundaries.turnAndMoveAnimals();
+            this.mapWithoutBoundaries.turnAndMoveAnimals();
+
+            // Eat
+            this.mapWithBoundaries.eatingTime();
+            this.mapWithoutBoundaries.eatingTime();
+
+            // Reproduction
+            this.mapWithBoundaries.reproduction();
+            this.mapWithoutBoundaries.reproduction();
+
+            // Add new grasses
+            this.mapWithBoundaries.addFreshGrass();
+            this.mapWithoutBoundaries.addFreshGrass();
+
+            // Change energy
+            this.mapWithBoundaries.changeEnergy();
+            this.mapWithoutBoundaries.changeEnergy();
         }
-    }
-
-    private void fullDayOfAnimalsLive(AbstractWorldMap map) {
-        Platform.runLater(() -> {
-            this.app.renderMap(map, false);
-        });
-        // Remove dead animals
-        map.removeDeadAnimals();
-
-        // Turn and move
-        map.turnAndMoveAnimals();
-
-        // Eat
-        map.eatingTime();
-
-        // Reproduction
-        map.reproduction();
-
-        // Add new grasses
-        map.addFreshGrass();
-
-        // Change energy
-        map.changeEnergy();
     }
 }

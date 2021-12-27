@@ -19,7 +19,6 @@ public class AbstractWorldMap implements IWorldMap, IPositionChangeObserver {
     protected HashMap<Vector2d, LinkedList<Animal>> animals = new LinkedHashMap<>();
     protected HashMap<Vector2d, Grass> grasses = new LinkedHashMap<>();
     protected List<Animal> animalsList = new LinkedList<>();
-    protected List<Grass> grassList = new LinkedList<>();
     protected HashMap<Animal, Integer> deadAnimals = new LinkedHashMap<>();
     private int jungleHeight;
     private int jungleWidth;
@@ -28,6 +27,7 @@ public class AbstractWorldMap implements IWorldMap, IPositionChangeObserver {
     private final Vector2d mapUpperRight;
     private final Vector2d jungleUpperRight;
     private final ArrayList<Vector2d> freeGrassPositions;
+    private HashMap<int[], Integer> dominantGenotype = new HashMap<>();
 
     // Constructor
     public AbstractWorldMap(int mapHeight, int mapWidth, int dailyEnergyUsage, int grassProfit, double jungleRatio) {
@@ -94,7 +94,6 @@ public class AbstractWorldMap implements IWorldMap, IPositionChangeObserver {
             if (this.grasses.get(position) == null) {
                 this.grasses.put(position, (Grass) element);
             }
-            this.grassList.add((Grass) element);
         }
     }
 
@@ -154,6 +153,18 @@ public class AbstractWorldMap implements IWorldMap, IPositionChangeObserver {
             position = new Vector2d(position.getX(), this.mapUpperRight.getY());
         return position;
     }
+//
+//    public void placeMagicAnimals(int energy) {
+//        int i =0;
+//        while (i < this.animalsList.size()){
+//            Animal animal = this.animalsList.get(i);
+//            Animal newAnimal = new Animal(this, animal, energy, this.era);
+//            if (!this.isOccupied(newAnimal.getPosition())){
+//                place(newAnimal);
+//                i++;
+//            }
+//        }
+//    }
 
     // Map functions
     public void removeDeadAnimals() {
@@ -163,29 +174,9 @@ public class AbstractWorldMap implements IWorldMap, IPositionChangeObserver {
                 removeAnimalFromHashMap(animal, animal.getPosition());
                 animal.removeObserver(this);
                 this.animalsList.remove(animal);
+                animal.setDeathDate(this.era);
             }
         }
-//        Map<Vector2d, LinkedList<Animal>> animalsToRemove = new HashMap<>();
-//        this.animals.forEach((key, value) -> {
-//            for (Animal animal : value) {
-//                if (animal.isDead()) {
-//                    animal.setDeathDate(this.era);
-//                    this.deadAnimals.put(animal, this.era - animal.getBornDate());
-//                    if (animalsToRemove.containsKey(key)) {
-//                        animalsToRemove.get(key).add(animal);
-//                    } else {
-//                        LinkedList<Animal> newList = new LinkedList<>();
-//                        newList.add(animal);
-//                        animalsToRemove.put(key, newList);
-//                    }
-//                }
-//            }
-//        });
-//        animalsToRemove.forEach((key, value) -> {
-//            for (Animal animal : value) {
-//                this.animals.get(key).remove(animal);
-//            }
-//        })
     }
 
     public void turnAndMoveAnimals() {
@@ -207,7 +198,6 @@ public class AbstractWorldMap implements IWorldMap, IPositionChangeObserver {
         }
         for (Grass tuft : grassesToRemove) {
             this.grasses.remove(tuft.getPosition());
-            this.grassList.remove(tuft);
             this.freeGrassPositions.add(tuft.getPosition());
         }
     }
@@ -234,7 +224,7 @@ public class AbstractWorldMap implements IWorldMap, IPositionChangeObserver {
                 if (father != null && mother != null) {
                     if (father.getEnergy() > father.getStartingEnergy() / 2 && mother.getEnergy() > mother.getStartingEnergy() / 2) {
                         Animal child = father.reproduction(mother);
-                        this.place(child);
+                        place(child);
                     }
                 }
             }
@@ -292,25 +282,86 @@ public class AbstractWorldMap implements IWorldMap, IPositionChangeObserver {
         return this.jungleUpperRight;
     }
 
-    public Vector2d[] getAnimalsAndGrasses() {
-        Vector2d[] grassesAndAnimals = new Vector2d[this.animals.size() + this.grasses.size()];
-        int index = 0;
-        for (Vector2d key : this.grasses.keySet()) {
-            grassesAndAnimals[index] = key;
-            index++;
-        }
-        for (Vector2d key : this.animals.keySet()) {
-            grassesAndAnimals[index] = key;
-            index++;
-        }
-        return grassesAndAnimals;
+    // Getters for plot
+    public int getEra() {
+        return this.era;
     }
 
     public List<Animal> getAnimals() {
-        return this.animalsList;
+        LinkedList<Animal> animalsList = new LinkedList<>();
+        for (LinkedList<Animal> animals : this.animals.values()) {
+            animalsList.addAll(animals);
+        }
+        return animalsList;
     }
 
-    public int getEra() {
-        return this.era;
+    public List<Grass> getGrass() {
+        LinkedList<Grass> grassesList = new LinkedList<>();
+        grassesList.addAll(this.grasses.values());
+        return grassesList;
+    }
+
+    public int[] getDominantGenotype() {
+        for (LinkedList<Animal> animals : this.animals.values()) {
+            for (Animal animal : animals) {
+                if (this.dominantGenotype.containsKey(animal.getAnimalGenes().getGenesList())) {
+                    this.dominantGenotype.replace(animal.getAnimalGenes().getGenesList(),
+                            this.dominantGenotype.get(animal.getAnimalGenes()) + 1);
+                } else
+                    this.dominantGenotype.put(animal.getAnimalGenes().getGenesList(), 1);
+            }
+        }
+        int maxNumberOfGenes = 0;
+        int[] mostDominantGenotype = new int[32];
+        for (int[] genes : this.dominantGenotype.keySet()) {
+            if (this.dominantGenotype.get(genes) > maxNumberOfGenes) {
+                maxNumberOfGenes = this.dominantGenotype.get(genes);
+                mostDominantGenotype = genes;
+            }
+        }
+        return mostDominantGenotype;
+    }
+
+    public double getAverageAnimalsEnergy() {
+        double count = 0;
+        double numberOfAnimals = 0;
+        for (LinkedList<Animal> animals : this.animals.values()) {
+            for (Animal animal : animals) {
+                count += animal.getEnergy();
+                numberOfAnimals++;
+            }
+        }
+        return count / numberOfAnimals;
+    }
+
+    public double getAverageDeadAnimalsLife() {
+        if (this.deadAnimals == null || this.deadAnimals.size() == 0)
+            return 0;
+        else {
+            double count = 0;
+            for (int age : this.deadAnimals.values()) {
+                count += age;
+            }
+            return count / this.deadAnimals.size();
+        }
+    }
+
+    public double getAverageNumberOfChildren() {
+        double count = 0;
+        double numberOfAnimals = 0;
+        for (LinkedList<Animal> animals : this.animals.values()) {
+            for (Animal animal : animals) {
+                count += animal.getChildren();
+                numberOfAnimals++;
+            }
+        }
+        return count / numberOfAnimals;
+    }
+
+    public List getAnimalInfo(Animal animal) {
+        List<Integer> animalInfo = new LinkedList<Integer>();
+        animalInfo.add(animal.getChildren());
+        animalInfo.add(animal.getDeathDate());
+        return animalInfo;
     }
 }

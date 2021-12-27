@@ -51,8 +51,12 @@ public class Genes {
 
 
     // Getters
-    private int[] getGenes(Genes genes) {
+    public int[] getGenes(Genes genes) {
         return genes.animalGenes;
+    }
+
+    public int[] getGenesList(){
+        return this.animalGenes;
     }
 
     public int getRandomGene() {

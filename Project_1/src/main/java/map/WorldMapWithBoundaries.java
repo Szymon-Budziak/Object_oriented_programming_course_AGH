@@ -1,6 +1,10 @@
 package map;
 
+import elements.Animal;
+import elements.Grass;
 import elements.Vector2d;
+
+import java.util.List;
 
 public class WorldMapWithBoundaries extends AbstractWorldMap {
     // Constructor
@@ -61,8 +65,44 @@ public class WorldMapWithBoundaries extends AbstractWorldMap {
         return super.getJungleUpperRight();
     }
 
+    // Getters for plot
     @Override
-    public Vector2d[] getAnimalsAndGrasses() {
-        return super.getAnimalsAndGrasses();
+    public int getEra() {
+        return super.getEra();
+    }
+
+    @Override
+    public List<Animal> getAnimals() {
+        return super.getAnimals();
+    }
+
+    @Override
+    public List<Grass> getGrass() {
+        return super.getGrass();
+    }
+
+    @Override
+    public int[] getDominantGenotype() {
+        return super.getDominantGenotype();
+    }
+
+    @Override
+    public double getAverageAnimalsEnergy() {
+        return super.getAverageAnimalsEnergy();
+    }
+
+    @Override
+    public double getAverageDeadAnimalsLife() {
+        return super.getAverageDeadAnimalsLife();
+    }
+
+    @Override
+    public double getAverageNumberOfChildren() {
+        return super.getAverageNumberOfChildren();
+    }
+
+    @Override
+    public List getAnimalInfo(Animal animal) {
+        return super.getAnimalInfo(animal);
     }
 }

@@ -8,7 +8,6 @@ import map.AbstractWorldMap;
 import map.WorldMapWithBoundaries;
 import map.WorldMapWithoutBoundaries;
 
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -19,11 +18,10 @@ public class Animal implements IMapElement {
     private MapDirection orientation;
     private Vector2d position;
     private final Genes genes;
-    private ArrayList<Animal> children;
+    private int children;
     private int bornDate;
-    private final List<IPositionChangeObserver> observers = new LinkedList<>();
     private int deathDate;
-    private int age;
+    private final List<IPositionChangeObserver> observers = new LinkedList<>();
 
     // Constructors
     public Animal(AbstractWorldMap map, int energy, int era) {
@@ -35,12 +33,12 @@ public class Animal implements IMapElement {
         this.position = new Vector2d(2, 2);
         this.position = this.position.setRandomPosition(this.map.getMapLowerLeft(), this.map.getMapUpperRight());
         this.genes = new Genes();
-        this.children = new ArrayList<>();
+        this.children = 0;
         this.bornDate = era;
-        this.age = 0;
+        this.deathDate = 0;
     }
 
-    public Animal(AbstractWorldMap map, Vector2d position, int energy, Genes genes) {
+    public Animal(AbstractWorldMap map, Vector2d position, int energy, Genes genes, int era) {
         this.map = map;
         this.position = position;
         this.orientation = MapDirection.NORTH;
@@ -48,8 +46,22 @@ public class Animal implements IMapElement {
         this.startingEnergy = energy;
         this.energy = energy;
         this.genes = genes;
-        this.age = 0;
-        this.children = new ArrayList<>();
+        this.children = 0;
+        this.bornDate = era;
+        this.deathDate = 0;
+    }
+
+    public Animal(AbstractWorldMap map, Animal otherAnimal, int energy, int era) {
+        this.map = map;
+        this.position = new Vector2d(2, 2);
+        this.position = this.position.setRandomPosition(this.map.getMapLowerLeft(), this.map.getMapUpperRight());
+        this.orientation = otherAnimal.getOrientation();
+        this.startingEnergy = energy;
+        this.energy = energy;
+        this.genes = otherAnimal.getAnimalGenes();
+        this.children = otherAnimal.getChildren();
+        this.bornDate = era;
+        this.deathDate = 0;
     }
 
     // Getters
@@ -82,6 +94,22 @@ public class Animal implements IMapElement {
         return this.startingEnergy;
     }
 
+    public int getChildren() {
+        return this.children;
+    }
+
+    public int getDeathDate() {
+        return this.deathDate;
+    }
+
+    public Genes getAnimalGenes() {
+        return this.genes;
+    }
+
+    public MapDirection getOrientation() {
+        return orientation;
+    }
+
     // Setters
     public void increaseEnergy(int energy) {
         this.energy += energy;
@@ -89,6 +117,10 @@ public class Animal implements IMapElement {
 
     public void reduceEnergy(int energy) {
         this.energy -= energy;
+    }
+
+    public void setDeathDate(int era) {
+        this.deathDate = era - this.bornDate;
     }
 
     // Animal specific functions - move and rotate
@@ -106,7 +138,6 @@ public class Animal implements IMapElement {
     }
 
     private void move(MoveDirection direction) {
-        this.age += 1;
         switch (direction) {
             case RIGHT -> this.orientation = orientation.next();
             case LEFT -> this.orientation = orientation.previous();
@@ -157,9 +188,9 @@ public class Animal implements IMapElement {
         this.energy = (int) (this.energy * 0.75);
         otherAnimal.energy = (int) (otherAnimal.energy * 0.75);
         Genes childGenes = new Genes(this.genes, otherAnimal.genes, this.energy, otherAnimal.energy);
-        Animal child = new Animal(this.map, this.position, childEnergy, childGenes);
-        this.children.add(child);
-        otherAnimal.children.add(child);
+        Animal child = new Animal(this.map, this.position, childEnergy, childGenes, this.map.getEra());
+        this.children++;
+        otherAnimal.children++;
         return child;
     }
 }
