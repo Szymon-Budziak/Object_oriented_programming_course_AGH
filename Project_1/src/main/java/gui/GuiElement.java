@@ -16,8 +16,6 @@ public class GuiElement {
             this.imageView = new ImageView(image);
             this.imageView.setFitWidth(20);
             this.imageView.setFitHeight(20);
-//            this.vBox.getChildren().addAll(imageView);
-//            this.vBox.setAlignment(Pos.CENTER);
         } catch (FileNotFoundException e) {
             throw new RuntimeException("File was not found.");
         }

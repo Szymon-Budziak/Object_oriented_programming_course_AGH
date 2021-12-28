@@ -1,12 +1,14 @@
 package gui;
 
 import elements.Animal;
+import elements.Genes;
 import elements.Grass;
 import elements.Vector2d;
 import interfaces.IMapElement;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.geometry.Pos;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
@@ -19,6 +21,8 @@ import javafx.scene.layout.*;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 import map.AbstractWorldMap;
 import map.WorldMapWithBoundaries;
@@ -47,8 +51,6 @@ public class App extends Application {
     private final int gridWidth = 30;
     private WorldMapWithBoundaries mapWithBoundaries;
     private WorldMapWithoutBoundaries mapWithoutBoundaries;
-    private final int sceneHeight = 1920;
-    private final int sceneWidth = 1200;
     private VBox mainVBox;
     private VBox optionsVBox;
     private LineChart mapWithBoundariesLineChart;
@@ -63,11 +65,11 @@ public class App extends Application {
     private final XYChart.Series mapWithoutBoundariesDataSeries4 = new XYChart.Series();
     private final XYChart.Series mapWithBoundariesDataSeries5 = new XYChart.Series();
     private final XYChart.Series mapWithoutBoundariesDataSeries5 = new XYChart.Series();
-    private HBox genotypeHBox;
     private Thread engineThreadWithBoundaries;
     private Thread engineThreadWithoutBoundaries;
-    private Stage dominantGenotypeWindow;
-    private int magicCount;
+    private VBox plotAndGenotypeVBox;
+    private HBox genotypeHBox;
+    private int magicCount = 0;
     private boolean mapWithBoundariesWaitingThread = false;
     private boolean mapWithoutBoundariesWaitingThread = false;
 
@@ -140,7 +142,14 @@ public class App extends Application {
             this.mainVBox = new VBox(this.optionsVBox);
             this.mainVBox.setSpacing(50);
 
-            Scene scene = new Scene(this.mainVBox, this.sceneWidth, this.sceneHeight);
+            Screen screen = Screen.getPrimary();
+            Rectangle2D bounds = screen.getVisualBounds();
+            primaryStage.setX(bounds.getMinX());
+            primaryStage.setY(bounds.getMinY());
+            primaryStage.setWidth(bounds.getWidth());
+            primaryStage.setHeight(bounds.getHeight());
+
+            Scene scene = new Scene(this.mainVBox);
             primaryStage.setScene(scene);
             primaryStage.show();
         } catch (IllegalArgumentException exception) {
@@ -193,25 +202,27 @@ public class App extends Application {
             // Options
             VBox optionButtons = createOptionButtons();
             HBox gridPaneHBox = new HBox(this.mapWithoutBoundariesGridPane, optionButtons, this.mapWithBoundariesGridPane);
-            gridPaneHBox.setSpacing(40);
+            gridPaneHBox.setSpacing(20);
             gridPaneHBox.setAlignment(Pos.CENTER);
 
             // Plot
             VBox mapWithBoundariesPlotVBox = createPlot(this.mapWithBoundaries);
             VBox mapWithoutBoundariesPlotVBox = createPlot(this.mapWithoutBoundaries);
             HBox plotHBox = new HBox(mapWithoutBoundariesPlotVBox, mapWithBoundariesPlotVBox);
+            plotHBox.setSpacing(100);
             plotHBox.setAlignment(Pos.CENTER);
 
             // Dominant genotype
-//            VBox mapWithBoundariesGenotypeVBox = createDominantGenotype(this.mapWithBoundaries);
-//            VBox mapWithoutBoundariesGenotypeVBox = createDominantGenotype(this.mapWithoutBoundaries);
-//            this.genotypeHBox = new HBox(mapWithoutBoundariesGenotypeVBox, mapWithBoundariesGenotypeVBox);
-//            this.genotypeHBox.setAlignment(Pos.CENTER);
+            VBox mapWithBoundariesGenotypeVBox = createDominantGenotype(this.mapWithBoundaries);
+            VBox mapWithoutBoundariesGenotypeVBox = createDominantGenotype(this.mapWithoutBoundaries);
+            this.genotypeHBox = new HBox(mapWithoutBoundariesGenotypeVBox, mapWithBoundariesGenotypeVBox);
+            this.genotypeHBox.setSpacing(20);
+            this.genotypeHBox.setAlignment(Pos.CENTER);
 
-            VBox plotAndGenotypeHBox = new VBox(plotHBox);
+            this.plotAndGenotypeVBox = new VBox(plotHBox, this.genotypeHBox);
 
-            this.mainVBox.getChildren().add(gridPaneHBox);
-            this.mainVBox.getChildren().add(plotAndGenotypeHBox);
+            this.mainVBox.getChildren().addAll(gridPaneHBox, this.plotAndGenotypeVBox);
+            this.mainVBox.setSpacing(20);
             this.engineThreadWithBoundaries = new Thread(engineWithBoundaries);
             this.engineThreadWithoutBoundaries = new Thread(engineWithoutBoundaries);
             this.engineThreadWithBoundaries.start();
@@ -241,6 +252,7 @@ public class App extends Application {
         if (!finishMap)
             placeAnimals(map);
         updateLineChart(map);
+        updateDominantGenotype();
     }
 
     private void createGrid(AbstractWorldMap map) {
@@ -300,20 +312,12 @@ public class App extends Application {
             ImageView imageView = guiElement.getImageView();
             vBox = new VBox(imageView);
             if (map instanceof WorldMapWithBoundaries) {
-//                if (map.objectAt(position) instanceof Animal && Objects.equals(this.engineThread.getState().toString(), "TIMED_WAITING")) {
-//                    vBox.setOnMouseClicked((action) -> {
-//                        List animalInfo = this.mapWithBoundaries.getAnimalInfo((Animal) map.objectAt(position));
-//                    });
-//                }
+                if (map.objectAt(position) instanceof Animal)
+                    vBox.setOnMouseClicked((action) -> createWindowWithAnimalInfo(map, (Animal) map.objectAt(position)));
                 this.mapWithBoundariesGridPane.add(vBox, position.getX(), position.getY(), 1, 1);
             } else {
-//                if (map.objectAt(position) instanceof Animal)
-//                    if (map.objectAt(position) instanceof Animal && Objects.equals(this.engineThread.getState().toString(), "TIMED_WAITING")) {
-//                        vBox.setOnMouseClicked((action) -> {
-//                            List animalInfo = this.mapWithoutBoundaries.getAnimalInfo((Animal) map.objectAt(position));
-//
-//                        });
-//                    }
+                if (map.objectAt(position) instanceof Animal)
+                    vBox.setOnMouseClicked((action) -> createWindowWithAnimalInfo(map, (Animal) map.objectAt(position)));
                 this.mapWithoutBoundariesGridPane.add(vBox, position.getX(), position.getY(), 1, 1);
             }
         }
@@ -333,6 +337,71 @@ public class App extends Application {
             index++;
         }
         return animalsAndGrasses;
+    }
+
+    private void createWindowWithAnimalInfo(AbstractWorldMap map, Animal animal) {
+        Stage window = new Stage();
+        VBox animalInfoVBox = new VBox();
+        if (map instanceof WorldMapWithBoundaries) {
+            window.setTitle("Animal info on map with boundaries");
+        } else {
+            window.setTitle("Animal info on map without boundaries");
+        }
+        createAnimalInfoVBox(animalInfoVBox, animal, window);
+        StackPane stackPane = new StackPane(animalInfoVBox);
+        Scene newScene = new Scene(stackPane, 550, 250);
+        window.setScene(newScene);
+        if (map instanceof WorldMapWithBoundaries && this.mapWithBoundariesWaitingThread)
+            window.show();
+        else if (this.mapWithoutBoundariesWaitingThread)
+            window.show();
+    }
+
+    private void createAnimalInfoVBox(VBox animalInfoVBox, Animal animal, Stage window) {
+        animalInfoVBox.getChildren().clear();
+
+        // Animal image
+        Label imageViewInfoLabel = new Label("Animal image");
+        imageViewInfoLabel.setFont(Font.font("Arial", FontWeight.BOLD, 15));
+        GuiElement guiElement = new GuiElement(animal);
+        ImageView imageView = guiElement.getImageView();
+        imageView.setFitHeight(40);
+        imageView.setFitWidth(40);
+
+        // Number of animal's children
+        Label childrenInfoLabel = new Label("Number of children");
+        childrenInfoLabel.setFont(Font.font("Arial", FontWeight.BOLD, 15));
+        int animalNumberOfChildren = animal.getChildren();
+        Label numberOfChildrenLabel = new Label(String.valueOf(animalNumberOfChildren));
+
+        // Animal genotype
+        Label genotypeInfoLabel = new Label("Animal genotype");
+        genotypeInfoLabel.setFont(Font.font("Arial", FontWeight.BOLD, 15));
+        Genes animalGenes = animal.getAnimalGenes();
+        Label genotypeLabel = new Label(animalGenes.toString());
+
+        // Animal death date
+        Label animalDeathInfoLabel = new Label("Animal death age");
+        animalDeathInfoLabel.setFont(Font.font("Arial", FontWeight.BOLD, 15));
+        Label animalDeathLabel;
+        int animalDeathDate;
+        if (animal.isDead()) {
+            animalDeathDate = animal.getAge();
+            animalDeathLabel = new Label(String.valueOf(animalDeathDate));
+        } else
+            animalDeathLabel = new Label("Animal is still alive");
+
+        // Close button
+        Button closeButton = new Button("Close");
+        closeButton.setOnAction((action) -> {
+            window.close();
+        });
+        closeButton.setFont(Font.font("Arial", FontWeight.BOLD, 15));
+
+        animalInfoVBox.getChildren().addAll(imageViewInfoLabel, imageView, childrenInfoLabel, numberOfChildrenLabel, genotypeInfoLabel,
+                genotypeLabel, animalDeathInfoLabel, animalDeathLabel, closeButton);
+        animalInfoVBox.setSpacing(5);
+        animalInfoVBox.setAlignment(Pos.TOP_CENTER);
     }
 
     private VBox createPlot(AbstractWorldMap map) {
@@ -363,6 +432,7 @@ public class App extends Application {
     }
 
     private void updateLineChart(AbstractWorldMap map) {
+        // Updating line chart with current data
         if (map instanceof WorldMapWithBoundaries) {
             this.mapWithBoundariesDataSeries1.getData().add(new XYChart.Data(map.getEra(), map.getAnimals().size()));
             this.mapWithBoundariesDataSeries2.getData().add(new XYChart.Data(map.getEra(), map.getGrass().size()));
@@ -454,21 +524,6 @@ public class App extends Application {
         });
         exitButton.setFont(Font.font("Arial", FontWeight.BOLD, 15));
         exitButton.setMaxWidth(Double.MAX_VALUE);
-//
-//        Button showDominantGenotype = new Button("Dominant genotype");
-//        showDominantGenotype.setOnAction((action) -> {
-//            if (this.threadWaiting) {
-//                this.dominantGenotypeWindow = new Stage();
-//                this.dominantGenotypeWindow.setTitle("Animals with dominant genotype");
-////                Scene newScene = new Scene(this.dominantGenotypeWindow, 400, 400);
-////                this.dominantGenotypeWindow.setScene(newScene);
-//                this.dominantGenotypeWindow.setX(600);
-//                this.dominantGenotypeWindow.setY(600);
-//                this.dominantGenotypeWindow.show();
-//            }
-//        });
-//        showDominantGenotype.setFont(Font.font("Arial", FontWeight.BOLD, 20));
-//        showDominantGenotype.setMaxWidth(Double.MAX_VALUE);
 
         VBox vBox = new VBox(mapWithoutBoundariesOptions, mapWithBoundariesOptions, exitButton);
         vBox.setSpacing(15);
@@ -477,10 +532,37 @@ public class App extends Application {
     }
 
     private VBox createDominantGenotype(AbstractWorldMap map) {
-        int[] dominantGenotype = map.getDominantGenotype();
-        String genotype = Arrays.toString(dominantGenotype);
-        Label label = new Label(genotype);
-        return new VBox(label);
+        Genes dominantGenotype = map.getDominantGenotype();
+        String genotype = dominantGenotype.toString();
+        Text text;
+        if (map instanceof WorldMapWithBoundaries) {
+            text = new Text("Map with boundaries dominant genotype");
+        } else {
+            text = new Text("Map without boundaries dominant genotype");
+        }
+        text.setFont(Font.font("Arial", FontWeight.BOLD, 20));
+
+        Label genotypeLabel = new Label(genotype);
+        genotypeLabel.setFont(Font.font("Arial", FontWeight.NORMAL, 15));
+        if (map instanceof WorldMapWithBoundaries) {
+            VBox mapWithBoundariesDominantGenotypeBox = new VBox(text, genotypeLabel);
+            mapWithBoundariesDominantGenotypeBox.setAlignment(Pos.CENTER);
+            return mapWithBoundariesDominantGenotypeBox;
+        } else {
+            VBox mapWithoutBoundariesDominantGenotypeBox = new VBox(text, genotypeLabel);
+            mapWithoutBoundariesDominantGenotypeBox.setAlignment(Pos.CENTER);
+            return mapWithoutBoundariesDominantGenotypeBox;
+        }
+    }
+
+    private void updateDominantGenotype() {
+        this.plotAndGenotypeVBox.getChildren().remove(this.genotypeHBox);
+        VBox mapWithBoundariesGenotypeVBox = createDominantGenotype(this.mapWithBoundaries);
+        VBox mapWithoutBoundariesGenotypeVBox = createDominantGenotype(this.mapWithoutBoundaries);
+        this.genotypeHBox = new HBox(mapWithoutBoundariesGenotypeVBox, mapWithBoundariesGenotypeVBox);
+        this.genotypeHBox.setSpacing(20);
+        this.genotypeHBox.setAlignment(Pos.CENTER);
+        this.plotAndGenotypeVBox.getChildren().add(this.genotypeHBox);
     }
 
     private void saveFileToCSV(AbstractWorldMap map, String filePath, int era) {
@@ -580,6 +662,3 @@ public class App extends Application {
         }
     }
 }
-
-// TODO 1 dominujący genotyp
-// TODO 2 wskazywanie zwierzęcia przy zatrzymaniu

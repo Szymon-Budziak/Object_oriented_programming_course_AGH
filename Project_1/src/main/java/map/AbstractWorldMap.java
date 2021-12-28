@@ -1,6 +1,7 @@
 package map;
 
 import elements.Animal;
+import elements.Genes;
 import elements.Grass;
 import elements.Vector2d;
 import interfaces.IMapElement;
@@ -27,7 +28,6 @@ public class AbstractWorldMap implements IWorldMap, IPositionChangeObserver {
     private final Vector2d mapUpperRight;
     private final Vector2d jungleUpperRight;
     private final ArrayList<Vector2d> freeGrassPositions;
-    private HashMap<int[], Integer> dominantGenotype = new HashMap<>();
 
     // Constructor
     public AbstractWorldMap(int mapHeight, int mapWidth, int dailyEnergyUsage, int grassProfit, double jungleRatio) {
@@ -301,22 +301,26 @@ public class AbstractWorldMap implements IWorldMap, IPositionChangeObserver {
         return grassesList;
     }
 
-    public int[] getDominantGenotype() {
-        for (LinkedList<Animal> animals : this.animals.values()) {
-            for (Animal animal : animals) {
-                if (this.dominantGenotype.containsKey(animal.getAnimalGenes().getGenesList())) {
-                    this.dominantGenotype.replace(animal.getAnimalGenes().getGenesList(),
-                            this.dominantGenotype.get(animal.getAnimalGenes()) + 1);
-                } else
-                    this.dominantGenotype.put(animal.getAnimalGenes().getGenesList(), 1);
-            }
-        }
-        int maxNumberOfGenes = 0;
-        int[] mostDominantGenotype = new int[32];
-        for (int[] genes : this.dominantGenotype.keySet()) {
-            if (this.dominantGenotype.get(genes) > maxNumberOfGenes) {
-                maxNumberOfGenes = this.dominantGenotype.get(genes);
-                mostDominantGenotype = genes;
+    public Genes getDominantGenotype() {
+        HashMap<Genes, Integer> dominantGenotypeCounter = new HashMap<>();
+        Genes mostDominantGenotype = null;
+        int mostDominantCount = 0;
+        int count;
+        for (Animal animal : this.animalsList) {
+            Genes animalGenotype = animal.getAnimalGenes();
+            if (dominantGenotypeCounter.containsKey(animalGenotype)) {
+                count = dominantGenotypeCounter.remove(animalGenotype);
+                dominantGenotypeCounter.put(animalGenotype, count + 1);
+                if (count + 1 > mostDominantCount) {
+                    mostDominantGenotype = animalGenotype;
+                    mostDominantCount = count + 1;
+                }
+            } else {
+                dominantGenotypeCounter.put(animalGenotype, 1);
+                if (mostDominantGenotype == null) {
+                    mostDominantGenotype = animalGenotype;
+                    mostDominantCount = 1;
+                }
             }
         }
         return mostDominantGenotype;

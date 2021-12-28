@@ -1,6 +1,7 @@
 package map;
 
 import elements.Animal;
+import elements.Genes;
 import elements.Grass;
 import elements.Vector2d;
 
@@ -82,7 +83,7 @@ public class WorldMapWithBoundaries extends AbstractWorldMap {
     }
 
     @Override
-    public int[] getDominantGenotype() {
+    public Genes getDominantGenotype() {
         return super.getDominantGenotype();
     }
 

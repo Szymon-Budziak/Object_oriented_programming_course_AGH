@@ -11,9 +11,9 @@ public class Genes {
     public Genes() {
         this.animalGenes = new int[32];
         for (int i = 0; i < this.animalGenes.length; i++) {
-            animalGenes[i] = random.nextInt(8);
+            this.animalGenes[i] = this.random.nextInt(8);
         }
-        Arrays.sort(animalGenes);
+        Arrays.sort(this.animalGenes);
     }
 
     public Genes(Genes genes1, Genes genes2, int energy1, int energy2) {
@@ -55,12 +55,16 @@ public class Genes {
         return genes.animalGenes;
     }
 
-    public int[] getGenesList(){
-        return this.animalGenes;
-    }
-
     public int getRandomGene() {
         int randomGene = random.nextInt(32);
         return this.animalGenes[randomGene];
+    }
+    public int[] getAnimalGenes(){
+        return this.animalGenes;
+    }
+
+    @Override
+    public String toString() {
+        return Arrays.toString(this.animalGenes);
     }
 }

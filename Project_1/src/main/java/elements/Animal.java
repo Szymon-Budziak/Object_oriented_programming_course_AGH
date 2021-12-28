@@ -106,6 +106,10 @@ public class Animal implements IMapElement {
         return this.genes;
     }
 
+    public int getAge() {
+        return this.bornDate - this.deathDate;
+    }
+
     public MapDirection getOrientation() {
         return orientation;
     }
