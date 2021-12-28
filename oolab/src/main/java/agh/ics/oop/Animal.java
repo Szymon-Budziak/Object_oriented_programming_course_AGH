@@ -47,14 +47,14 @@ public class Animal implements IMapElement {
             case RIGHT -> this.orientation = orientation.next();
             case LEFT -> this.orientation = orientation.previous();
             case FORWARD -> {
-                newPosition = position.add(orientation.toUnitVector());
+                newPosition = this.position.add(this.orientation.toUnitVector());
                 if (this.map.canMoveTo(newPosition)) {
                     positionChanged(this.position, newPosition);
                     this.position = newPosition;
                 }
             }
             case BACKWARD -> {
-                newPosition = position.subtract(orientation.toUnitVector());
+                newPosition = this.position.subtract(this.orientation.toUnitVector());
                 if (this.map.canMoveTo(newPosition)) {
                     positionChanged(this.position, newPosition);
                     this.position = newPosition;
@@ -65,21 +65,21 @@ public class Animal implements IMapElement {
     }
 
     public void addObserver(IPositionChangeObserver observer) {
-        observers.add(observer);
+        this.observers.add(observer);
     }
 
     public void removeObserver(IPositionChangeObserver observer) {
-        observers.remove(observer);
+        this.observers.remove(observer);
     }
 
     private void positionChanged(Vector2d oldPosition, Vector2d newPosition) {
-        for (IPositionChangeObserver observer : observers) {
+        for (IPositionChangeObserver observer : this.observers) {
             observer.positionChanged(oldPosition, newPosition);
         }
     }
 
     public String toString() {
-        return switch (orientation) {
+        return switch (this.orientation) {
             case NORTH -> "^";
             case EAST -> ">";
             case SOUTH -> "v";

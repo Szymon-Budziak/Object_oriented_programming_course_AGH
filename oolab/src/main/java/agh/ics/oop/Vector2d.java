@@ -27,7 +27,7 @@ public class Vector2d {
     }
 
     public Vector2d lowerLeft(Vector2d other) {
-        return new Vector2d(min(this.x, other.x), min(y, other.y));
+        return new Vector2d(min(this.x, other.x), min(this.y, other.y));
     }
 
     public Vector2d add(Vector2d other) {

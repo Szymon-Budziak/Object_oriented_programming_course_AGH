@@ -5,14 +5,14 @@ import java.util.LinkedHashMap;
 
 public abstract class AbstractWorldMap implements IWorldMap, IPositionChangeObserver {
     protected HashMap<Vector2d, Animal> animals = new LinkedHashMap<>();
-    MapVisualizer map = new MapVisualizer(this);
+    private MapVisualizer map = new MapVisualizer(this);
 
     @Override
     public boolean place(Animal animal) throws IllegalArgumentException {
         if (!this.canMoveTo(animal.getPosition())) {
             throw new IllegalArgumentException(animal.getPosition() + " is not legal move specification");
         }
-        animals.put(animal.getPosition(), animal);
+        this.animals.put(animal.getPosition(), animal);
         animal.addObserver(this);
         return true;
     }
@@ -29,21 +29,20 @@ public abstract class AbstractWorldMap implements IWorldMap, IPositionChangeObse
 
     @Override
     public void positionChanged(Vector2d oldPosition, Vector2d newPosition) {
-        Animal animal = animals.get(oldPosition);
-        animals.remove(oldPosition);
-        animals.put(newPosition, animal);
+        Animal animal = this.animals.get(oldPosition);
+        this.animals.remove(oldPosition);
+        this.animals.put(newPosition, animal);
     }
 
     protected Vector2d[] getAnimalsAndGrass() {
-        Vector2d[] onlyAnimals = new Vector2d[animals.size()];
+        Vector2d[] onlyAnimals = new Vector2d[this.animals.size()];
         int index = 0;
-        for (Vector2d key : animals.keySet()) {
+        for (Vector2d key : this.animals.keySet()) {
             onlyAnimals[index] = key;
             index++;
         }
         return onlyAnimals;
     }
-
 
     public abstract Vector2d getUpperRight();
 
@@ -51,6 +50,6 @@ public abstract class AbstractWorldMap implements IWorldMap, IPositionChangeObse
 
     @Override
     public String toString() {
-        return map.draw(getLowerLeft(), getUpperRight());
+        return this.map.draw(getLowerLeft(), getUpperRight());
     }
 }

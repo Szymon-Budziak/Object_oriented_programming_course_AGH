@@ -28,6 +28,5 @@ public class MapDirectionTest {
         assertNotEquals(MapDirection.SOUTH, null);
         assertNotEquals(MapDirection.WEST, MapDirection.SOUTH.previous());
         assertNotEquals(MapDirection.NORTH, null);
-
     }
 }

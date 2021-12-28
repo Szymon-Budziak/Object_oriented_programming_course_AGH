@@ -14,24 +14,24 @@ public class MapBoundary implements IPositionChangeObserver {
     }
 
     public void addPosition(Vector2d position) {
-        xOrder.add(position);
-        yOrder.add(position);
+        this.xOrder.add(position);
+        this.yOrder.add(position);
     }
 
     private void removePosition(Vector2d position) {
-        xOrder.remove(position);
-        yOrder.remove(position);
+        this.xOrder.remove(position);
+        this.yOrder.remove(position);
     }
 
     public Vector2d getUpperRight() {
-        Vector2d upper = yOrder.last();
-        Vector2d right = xOrder.last();
+        Vector2d upper = this.yOrder.last();
+        Vector2d right = this.xOrder.last();
         return upper.upperRight(right);
     }
 
     public Vector2d getLowerLeft() {
-        Vector2d lower = yOrder.first();
-        Vector2d left = xOrder.first();
+        Vector2d lower = this.yOrder.first();
+        Vector2d left = this.xOrder.first();
         return lower.lowerLeft(left);
     }
 }

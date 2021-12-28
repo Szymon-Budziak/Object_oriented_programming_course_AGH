@@ -11,7 +11,7 @@ public class SimulationEngine implements IEngine, Runnable {
     private final List<MoveDirection> directions;
     private final List<Animal> animals;
     private final App app;
-    int moveDelay = 1000;
+    private int moveDelay = 1000;
 
     public SimulationEngine(MoveDirection[] directions, GrassField map, Vector2d[] positions, App app, MapDirection orientation) {
         this.map = map;
@@ -20,33 +20,33 @@ public class SimulationEngine implements IEngine, Runnable {
         this.app = app;
         for (Vector2d position : positions) {
             Animal animal = new Animal(map, position, orientation);
-            animals.add(animal);
+            this.animals.add(animal);
             map.place(animal);
         }
     }
 
     public Animal getAnimal(int i) {
-        return animals.get(i);
+        return this.animals.get(i);
     }
 
     @Override
     public void run() {
         Platform.runLater(() -> {
-            app.renderMap(map);
+            this.app.renderMap(this.map);
         });
         try {
-            Thread.sleep(moveDelay);
+            Thread.sleep(this.moveDelay);
         } catch (InterruptedException e) {
             System.out.println(e.getMessage());
         }
-        for (int i = 0; i < directions.size(); i++) {
-            Animal currentAnimal = animals.get(i % animals.size());
-            currentAnimal.move(directions.get(i));
+        for (int i = 0; i < this.directions.size(); i++) {
+            Animal currentAnimal = this.animals.get(i % this.animals.size());
+            currentAnimal.move(this.directions.get(i));
             Platform.runLater(() -> {
-                app.renderMap(map);
+                this.app.renderMap(this.map);
             });
             try {
-                Thread.sleep(moveDelay);
+                Thread.sleep(this.moveDelay);
             } catch (InterruptedException e) {
                 System.out.println(e.getMessage());
             }

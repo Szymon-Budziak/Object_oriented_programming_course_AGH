@@ -4,7 +4,7 @@ import java.util.*;
 
 public class GrassField extends AbstractWorldMap {
     private HashMap<Vector2d, Grass> grassPoints = new LinkedHashMap<>();
-    MapVisualizer map = new MapVisualizer(this);
+    private MapVisualizer map = new MapVisualizer(this);
     private final MapBoundary mapBoundary;
 
     public GrassField(int n) {
@@ -19,7 +19,7 @@ public class GrassField extends AbstractWorldMap {
                 position = new Vector2d(x, y);
             } while (objectAt(position) instanceof Grass);
             this.grassPoints.put(position, new Grass(position));
-            mapBoundary.addPosition(position);
+            this.mapBoundary.addPosition(position);
         }
     }
 
@@ -34,8 +34,8 @@ public class GrassField extends AbstractWorldMap {
     @Override
     public boolean place(Animal animal) throws IllegalArgumentException {
         if (super.place(animal)) {
-            mapBoundary.addPosition(animal.getPosition());
-            animal.addObserver(mapBoundary);
+            this.mapBoundary.addPosition(animal.getPosition());
+            animal.addObserver(this.mapBoundary);
             return true;
         } else
             throw new IllegalArgumentException(animal.getPosition() + " is not legal move specification");
@@ -57,36 +57,36 @@ public class GrassField extends AbstractWorldMap {
     @Override
     public Vector2d[] getAnimalsAndGrass() {
         Vector2d[] onlyAnimals = super.getAnimalsAndGrass();
-        Vector2d[] grassAndAnimals = new Vector2d[grassPoints.size() + onlyAnimals.length];
+        Vector2d[] grassAndAnimals = new Vector2d[this.grassPoints.size() + onlyAnimals.length];
         int index = 0;
-        for (Vector2d key : grassPoints.keySet()) {
+        for (Vector2d key : this.grassPoints.keySet()) {
             grassAndAnimals[index] = key;
             index++;
         }
         for (int i = 0; i < onlyAnimals.length; i++) {
-            grassAndAnimals[grassPoints.size() + i] = onlyAnimals[i];
+            grassAndAnimals[this.grassPoints.size() + i] = onlyAnimals[i];
         }
         return grassAndAnimals;
     }
 
     private Grass getGrassAt(Vector2d position) {
-        return grassPoints.get(position);
+        return this.grassPoints.get(position);
     }
 
     private Animal getAnimalAt(Vector2d position) {
-        return animals.get(position);
+        return this.animals.get(position);
     }
 
     public Vector2d getUpperRight() {
-        return mapBoundary.getUpperRight();
+        return this.mapBoundary.getUpperRight();
     }
 
     public Vector2d getLowerLeft() {
-        return mapBoundary.getLowerLeft();
+        return this.mapBoundary.getLowerLeft();
     }
 
     @Override
     public String toString() {
-        return map.draw(getLowerLeft(), getUpperRight());
+        return this.map.draw(getLowerLeft(), getUpperRight());
     }
 }
