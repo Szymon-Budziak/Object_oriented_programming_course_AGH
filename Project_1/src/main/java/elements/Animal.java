@@ -11,6 +11,8 @@ import map.WorldMapWithoutBoundaries;
 import java.util.LinkedList;
 import java.util.List;
 
+import static java.lang.Math.abs;
+
 public class Animal implements IMapElement {
     private final AbstractWorldMap map;
     private int energy;
@@ -18,9 +20,10 @@ public class Animal implements IMapElement {
     private MapDirection orientation;
     private Vector2d position;
     private final Genes genes;
-    private int children;
-    private int bornDate;
+    private int numberOfChildren;
+    private final int bornDate;
     private int deathDate;
+    private final LinkedList<Animal> children;
     private final List<IPositionChangeObserver> observers = new LinkedList<>();
 
     // Constructors
@@ -33,7 +36,8 @@ public class Animal implements IMapElement {
         this.position = new Vector2d(2, 2);
         this.position = this.position.setRandomPosition(this.map.getMapLowerLeft(), this.map.getMapUpperRight());
         this.genes = new Genes();
-        this.children = 0;
+        this.numberOfChildren = 0;
+        this.children = new LinkedList<Animal>();
         this.bornDate = era;
         this.deathDate = 0;
     }
@@ -46,7 +50,8 @@ public class Animal implements IMapElement {
         this.startingEnergy = energy;
         this.energy = energy;
         this.genes = genes;
-        this.children = 0;
+        this.numberOfChildren = 0;
+        this.children = new LinkedList<Animal>();
         this.bornDate = era;
         this.deathDate = 0;
     }
@@ -59,6 +64,7 @@ public class Animal implements IMapElement {
         this.startingEnergy = energy;
         this.energy = energy;
         this.genes = otherAnimal.getAnimalGenes();
+        this.numberOfChildren = otherAnimal.getNumberOfChildren();
         this.children = otherAnimal.getChildren();
         this.bornDate = era;
         this.deathDate = 0;
@@ -94,12 +100,12 @@ public class Animal implements IMapElement {
         return this.startingEnergy;
     }
 
-    public int getChildren() {
-        return this.children;
+    public int getNumberOfChildren() {
+        return this.numberOfChildren;
     }
 
-    public int getDeathDate() {
-        return this.deathDate;
+    public LinkedList<Animal> getChildren() {
+        return this.children;
     }
 
     public Genes getAnimalGenes() {
@@ -107,7 +113,7 @@ public class Animal implements IMapElement {
     }
 
     public int getAge() {
-        return this.bornDate - this.deathDate;
+        return abs(this.deathDate - this.bornDate);
     }
 
     public MapDirection getOrientation() {
@@ -127,7 +133,7 @@ public class Animal implements IMapElement {
         this.deathDate = era - this.bornDate;
     }
 
-    // Animal specific functions - move and rotate
+    // Animal specific functions - rotate and move
     public void rotate() {
         int numberOfRotations = this.genes.getRandomGene();
         if (numberOfRotations == 0)
@@ -193,8 +199,10 @@ public class Animal implements IMapElement {
         otherAnimal.energy = (int) (otherAnimal.energy * 0.75);
         Genes childGenes = new Genes(this.genes, otherAnimal.genes, this.energy, otherAnimal.energy);
         Animal child = new Animal(this.map, this.position, childEnergy, childGenes, this.map.getEra());
-        this.children++;
-        otherAnimal.children++;
+        this.numberOfChildren++;
+        this.children.add(child);
+        otherAnimal.numberOfChildren++;
+        otherAnimal.children.add(child);
         return child;
     }
 }

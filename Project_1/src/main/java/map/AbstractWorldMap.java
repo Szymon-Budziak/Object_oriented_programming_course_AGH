@@ -21,8 +21,6 @@ public class AbstractWorldMap implements IWorldMap, IPositionChangeObserver {
     protected HashMap<Vector2d, Grass> grasses = new LinkedHashMap<>();
     protected List<Animal> animalsList = new LinkedList<>();
     protected HashMap<Animal, Integer> deadAnimals = new LinkedHashMap<>();
-    private int jungleHeight;
-    private int jungleWidth;
     private final Vector2d mapLowerLeft;
     private final Vector2d jungleLowerLeft;
     private final Vector2d mapUpperRight;
@@ -41,20 +39,20 @@ public class AbstractWorldMap implements IWorldMap, IPositionChangeObserver {
         this.mapUpperRight = new Vector2d(this.mapWidth - 1, this.mapHeight - 1);
 
         // Jungle set up
-        this.jungleHeight = (int) Math.round(this.mapHeight * this.jungleRatio);
-        this.jungleWidth = (int) Math.round(this.mapWidth * this.jungleRatio);
+        int jungleHeight = (int) Math.round(this.mapHeight * this.jungleRatio);
+        int jungleWidth = (int) Math.round(this.mapWidth * this.jungleRatio);
         int jungleLowerLeftX = 0;
         int jungleLowerLeftY = 0;
         int jungleUpperRightX = this.mapWidth - 1;
         int jungleUpperRightY = this.mapHeight - 1;
 
-        for (int i = 0; i < (this.mapWidth - this.jungleWidth); i++) {
+        for (int i = 0; i < (this.mapWidth - jungleWidth); i++) {
             if (i % 2 == 0)
                 jungleLowerLeftX++;
             else
                 jungleUpperRightX--;
         }
-        for (int i = 0; i < (this.mapHeight - this.jungleHeight); i++) {
+        for (int i = 0; i < (this.mapHeight - jungleHeight); i++) {
             if (i % 2 == 0)
                 jungleLowerLeftY++;
             else
@@ -71,7 +69,8 @@ public class AbstractWorldMap implements IWorldMap, IPositionChangeObserver {
         }
     }
 
-    // AbstractWorldMap specific functions
+    // AbstractWorldMap specific functions: positionChanged, canMoveTo, place, addAnimalToHashMap, addAnimalToHashMap,
+    //                                      removeAnimalFromHashMap, isOccupied, objectAt
     @Override
     public void positionChanged(IMapElement element, Vector2d oldPosition, Vector2d newPosition) {
         removeAnimalFromHashMap((Animal) element, oldPosition);
@@ -132,6 +131,7 @@ public class AbstractWorldMap implements IWorldMap, IPositionChangeObserver {
             return positions.getFirst();
     }
 
+    // WorldMapWithoutBoundaries specific function - teleport
     public Vector2d teleport(Vector2d position) {
         if (position.getX() < this.mapLowerLeft.getX()) {
             if (position.getY() < this.mapLowerLeft.getY())
@@ -154,6 +154,7 @@ public class AbstractWorldMap implements IWorldMap, IPositionChangeObserver {
         return position;
     }
 
+    // Function for magic simulation
     public void placeMagicAnimals(int energy) {
         int i = 0;
         while (i < 5) {
@@ -166,7 +167,7 @@ public class AbstractWorldMap implements IWorldMap, IPositionChangeObserver {
         }
     }
 
-    // Map functions
+    // Simulation specific functions: removeDeadAnimals, turnAndMoveAnimals, eatingTime, reproduction, addFreshGrass, changeEnergy
     public void removeDeadAnimals() {
         for (int i = 0; i < this.animalsList.size(); i++) {
             Animal animal = this.animalsList.get(i);
@@ -355,17 +356,10 @@ public class AbstractWorldMap implements IWorldMap, IPositionChangeObserver {
         double numberOfAnimals = 0;
         for (LinkedList<Animal> animals : this.animals.values()) {
             for (Animal animal : animals) {
-                count += animal.getChildren();
+                count += animal.getNumberOfChildren();
                 numberOfAnimals++;
             }
         }
         return count / numberOfAnimals;
-    }
-
-    public List getAnimalInfo(Animal animal) {
-        List<Integer> animalInfo = new LinkedList<Integer>();
-        animalInfo.add(animal.getChildren());
-        animalInfo.add(animal.getDeathDate());
-        return animalInfo;
     }
 }

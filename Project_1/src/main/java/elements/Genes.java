@@ -49,7 +49,6 @@ public class Genes {
         Arrays.sort(this.animalGenes);
     }
 
-
     // Getters
     public int[] getGenes(Genes genes) {
         return genes.animalGenes;
@@ -59,10 +58,8 @@ public class Genes {
         int randomGene = random.nextInt(32);
         return this.animalGenes[randomGene];
     }
-    public int[] getAnimalGenes(){
-        return this.animalGenes;
-    }
 
+    // toString
     @Override
     public String toString() {
         return Arrays.toString(this.animalGenes);

@@ -8,6 +8,7 @@ import elements.Vector2d;
 import java.util.List;
 
 public class WorldMapWithoutBoundaries extends AbstractWorldMap {
+
     // Constructor
     public WorldMapWithoutBoundaries(String mapHeight, String mapWidth, String dailyEnergyUsage, String grassProfit, String jungleRatio) {
         super(Integer.parseInt(mapHeight), Integer.parseInt(mapWidth), Integer.parseInt(dailyEnergyUsage),
@@ -48,6 +49,11 @@ public class WorldMapWithoutBoundaries extends AbstractWorldMap {
     @Override
     public void changeEnergy() {
         super.changeEnergy();
+    }
+
+    @Override
+    public void placeMagicAnimals(int energy) {
+        super.placeMagicAnimals(energy);
     }
 
     // Getters
@@ -105,15 +111,5 @@ public class WorldMapWithoutBoundaries extends AbstractWorldMap {
     @Override
     public double getAverageNumberOfChildren() {
         return super.getAverageNumberOfChildren();
-    }
-
-    @Override
-    public List getAnimalInfo(Animal animal) {
-        return super.getAnimalInfo(animal);
-    }
-
-    @Override
-    public void placeMagicAnimals(int energy) {
-        super.placeMagicAnimals(energy);
     }
 }
