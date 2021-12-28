@@ -3,58 +3,43 @@ package simulation;
 import elements.Animal;
 import gui.App;
 import javafx.application.Platform;
-import map.WorldMapWithBoundaries;
-import map.WorldMapWithoutBoundaries;
+import map.AbstractWorldMap;
 
 public class Simulation implements Runnable {
     private final App app;
-    private final WorldMapWithBoundaries mapWithBoundaries;
-    private final WorldMapWithoutBoundaries mapWithoutBoundaries;
     private final int animalsAtTheBeginning;
     private final int startingEnergy;
     private final int timeDelay;
-    private int mapWithBoundariesEra;
-    private int mapWithoutBoundariesEra;
+    private AbstractWorldMap map;
+    private int era;
 
     // Constructor
-    public Simulation(WorldMapWithBoundaries mapWithBoundaries, WorldMapWithoutBoundaries mapWithoutBoundaries, App app,
-                      int animalsAtTheBeginning, int startingEnergy, int timeDelay, String magiSimulation) {
-        this.mapWithBoundaries = mapWithBoundaries;
-        this.mapWithoutBoundaries = mapWithoutBoundaries;
+    public Simulation(AbstractWorldMap map, App app, int animalsAtTheBeginning, int startingEnergy, int timeDelay, String magiSimulation) {
+        this.map = map;
         this.app = app;
         this.animalsAtTheBeginning = animalsAtTheBeginning;
         this.startingEnergy = startingEnergy;
         this.timeDelay = timeDelay;
-        this.mapWithBoundariesEra = this.mapWithBoundaries.getEra();
-        this.mapWithoutBoundariesEra = this.mapWithoutBoundaries.getEra();
+        this.era = this.map.getEra();
         int i = 0;
         while (i < this.animalsAtTheBeginning) {
-            Animal animalWithBoundaries = new Animal(this.mapWithBoundaries, this.startingEnergy, this.mapWithBoundariesEra);
-            if (!this.mapWithBoundaries.isOccupied(animalWithBoundaries.getPosition())) {
-                this.mapWithBoundaries.place(animalWithBoundaries);
+            Animal animal = new Animal(this.map, this.startingEnergy, this.era);
+            if (!this.map.isOccupied(animal.getPosition())) {
+                this.map.place(animal);
                 i++;
             }
         }
-        i = 0;
-        while (i < this.animalsAtTheBeginning) {
-            Animal animalWithoutBoundaries = new Animal(this.mapWithoutBoundaries, this.startingEnergy, this.mapWithoutBoundariesEra);
-            if (!this.mapWithoutBoundaries.isOccupied(animalWithoutBoundaries.getPosition())) {
-                this.mapWithoutBoundaries.place(animalWithoutBoundaries);
-                i++;
-            }
+        if (this.animalsAtTheBeginning == 5 && magiSimulation.toLowerCase().equals("yes")) {
+            this.map.placeMagicAnimals(this.startingEnergy);
         }
-//        if (this.animalsAtTheBeginning == 5 && magiSimulation.toLowerCase().equals("yes"))
-//            this.mapWithBoundaries.placeMagicAnimals(this.startingEnergy);
-//            this.mapWithoutBoundaries.placeMagicAnimals(this.startingEnergy);
     }
 
     // Simulation specific function - run
     @Override
     public void run() {
-        while (this.mapWithBoundaries.getAnimals().size() > 0 || this.mapWithoutBoundaries.getAnimals().size() > 0) {
+        while (this.map.getAnimals().size() > 0) {
             Platform.runLater(() -> {
-                this.app.renderMap(this.mapWithBoundaries, false);
-                this.app.renderMap(this.mapWithoutBoundaries, false);
+                this.app.renderMap(this.map, false);
             });
             try {
                 Thread.sleep(this.timeDelay);
@@ -62,28 +47,22 @@ public class Simulation implements Runnable {
                 System.out.println(e.getMessage());
             }
             // Remove dead animals
-            this.mapWithBoundaries.removeDeadAnimals();
-            this.mapWithoutBoundaries.removeDeadAnimals();
+            this.map.removeDeadAnimals();
 
             // Turn and move
-            this.mapWithBoundaries.turnAndMoveAnimals();
-            this.mapWithoutBoundaries.turnAndMoveAnimals();
+            this.map.turnAndMoveAnimals();
 
             // Eat
-            this.mapWithBoundaries.eatingTime();
-            this.mapWithoutBoundaries.eatingTime();
+            this.map.eatingTime();
 
             // Reproduction
-            this.mapWithBoundaries.reproduction();
-            this.mapWithoutBoundaries.reproduction();
+            this.map.reproduction();
 
             // Add new grasses
-            this.mapWithBoundaries.addFreshGrass();
-            this.mapWithoutBoundaries.addFreshGrass();
+            this.map.addFreshGrass();
 
             // Change energy
-            this.mapWithBoundaries.changeEnergy();
-            this.mapWithoutBoundaries.changeEnergy();
+            this.map.changeEnergy();
         }
     }
 }

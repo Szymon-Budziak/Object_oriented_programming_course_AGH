@@ -105,4 +105,9 @@ public class WorldMapWithBoundaries extends AbstractWorldMap {
     public List getAnimalInfo(Animal animal) {
         return super.getAnimalInfo(animal);
     }
+
+    @Override
+    public void placeMagicAnimals(int energy) {
+        super.placeMagicAnimals(energy);
+    }
 }

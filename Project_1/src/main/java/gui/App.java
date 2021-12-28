@@ -25,6 +25,8 @@ import map.WorldMapWithBoundaries;
 import map.WorldMapWithoutBoundaries;
 import simulation.Simulation;
 
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -46,9 +48,8 @@ public class App extends Application {
     private WorldMapWithBoundaries mapWithBoundaries;
     private WorldMapWithoutBoundaries mapWithoutBoundaries;
     private final int sceneHeight = 1920;
-    private final int sceneWidth = 1080;
+    private final int sceneWidth = 1200;
     private VBox mainVBox;
-    private Stage primaryStage;
     private VBox optionsVBox;
     private LineChart mapWithBoundariesLineChart;
     private LineChart mapWithoutBoundariesLineChart;
@@ -63,16 +64,18 @@ public class App extends Application {
     private final XYChart.Series mapWithBoundariesDataSeries5 = new XYChart.Series();
     private final XYChart.Series mapWithoutBoundariesDataSeries5 = new XYChart.Series();
     private HBox genotypeHBox;
-    private Thread engineThread;
+    private Thread engineThreadWithBoundaries;
+    private Thread engineThreadWithoutBoundaries;
     private Stage dominantGenotypeWindow;
     private int magicCount;
-    private boolean threadWaiting = false;
+    private boolean mapWithBoundariesWaitingThread = false;
+    private boolean mapWithoutBoundariesWaitingThread = false;
+
 
     // App specific function - start
     @Override
     public void start(Stage primaryStage) {
         try {
-            this.primaryStage = primaryStage;
             primaryStage.setTitle("Evolution Simulator");
             // Welcome text
             HBox welcomeText = createHeadLineText("Welcome in Evolution Simulator!", 24);
@@ -137,16 +140,12 @@ public class App extends Application {
             this.mainVBox = new VBox(this.optionsVBox);
             this.mainVBox.setSpacing(50);
 
-            createScene();
+            Scene scene = new Scene(this.mainVBox, this.sceneWidth, this.sceneHeight);
+            primaryStage.setScene(scene);
+            primaryStage.show();
         } catch (IllegalArgumentException exception) {
             System.out.println(exception.getMessage());
         }
-    }
-
-    private void createScene() {
-        Scene scene = new Scene(this.mainVBox, this.sceneWidth, this.sceneHeight);
-        this.primaryStage.setScene(scene);
-        this.primaryStage.show();
     }
 
     // JavaFx objects for start function
@@ -180,39 +179,43 @@ public class App extends Application {
             this.mapWithoutBoundaries = new WorldMapWithoutBoundaries(this.heightTextField.getText(),
                     this.widthTextField.getText(), this.dailyEnergyUsageTextField.getText(), this.grassProfitTextField.getText(),
                     this.jungleRatioTextField.getText());
-            Simulation engine = new Simulation(this.mapWithBoundaries, this.mapWithoutBoundaries, this, Integer.parseInt(this.animalsAtTheBeginningTextField.getText()),
+            Simulation engineWithBoundaries = new Simulation(this.mapWithBoundaries, this, Integer.parseInt(this.animalsAtTheBeginningTextField.getText()),
                     Integer.parseInt(this.startingEnergyTextField.getText()), Integer.parseInt(this.refreshTimeTextField.getText()),
                     this.magicSimulationTextField.getText());
-            if (this.magicSimulationTextField.getText().toLowerCase().equals("yes"))
+            Simulation engineWithoutBoundaries = new Simulation(this.mapWithoutBoundaries, this, Integer.parseInt(this.animalsAtTheBeginningTextField.getText()),
+                    Integer.parseInt(this.startingEnergyTextField.getText()), Integer.parseInt(this.refreshTimeTextField.getText()),
+                    this.magicSimulationTextField.getText());
+            if (Integer.parseInt(this.animalsAtTheBeginningTextField.getText()) == 5 && this.magicSimulationTextField.getText().toLowerCase().equals("yes"))
                 this.magicCount++;
 
             this.mainVBox.getChildren().remove(this.optionsVBox);
 
             // Options
             VBox optionButtons = createOptionButtons();
-            HBox gridPaneHBox = new HBox(this.mapWithBoundariesGridPane, optionButtons, this.mapWithoutBoundariesGridPane);
+            HBox gridPaneHBox = new HBox(this.mapWithoutBoundariesGridPane, optionButtons, this.mapWithBoundariesGridPane);
             gridPaneHBox.setSpacing(40);
             gridPaneHBox.setAlignment(Pos.CENTER);
 
             // Plot
             VBox mapWithBoundariesPlotVBox = createPlot(this.mapWithBoundaries);
             VBox mapWithoutBoundariesPlotVBox = createPlot(this.mapWithoutBoundaries);
-            HBox plotHBox = new HBox(mapWithBoundariesPlotVBox, mapWithoutBoundariesPlotVBox);
+            HBox plotHBox = new HBox(mapWithoutBoundariesPlotVBox, mapWithBoundariesPlotVBox);
             plotHBox.setAlignment(Pos.CENTER);
 
             // Dominant genotype
-            VBox mapWithBoundariesGenotypeVBox = createDominantGenotype(this.mapWithBoundaries);
-            VBox mapWithoutBoundariesGenotypeVBox = createDominantGenotype(this.mapWithoutBoundaries);
-            this.genotypeHBox = new HBox(mapWithBoundariesGenotypeVBox, mapWithoutBoundariesGenotypeVBox);
-            this.genotypeHBox.setAlignment(Pos.CENTER);
+//            VBox mapWithBoundariesGenotypeVBox = createDominantGenotype(this.mapWithBoundaries);
+//            VBox mapWithoutBoundariesGenotypeVBox = createDominantGenotype(this.mapWithoutBoundaries);
+//            this.genotypeHBox = new HBox(mapWithoutBoundariesGenotypeVBox, mapWithBoundariesGenotypeVBox);
+//            this.genotypeHBox.setAlignment(Pos.CENTER);
 
-            VBox plotAndGenotypeHBox = new VBox(plotHBox, this.genotypeHBox);
+            VBox plotAndGenotypeHBox = new VBox(plotHBox);
 
-//            gridPaneHBox.addEventFilter(MouseEvent.MOUSE_CLICKED, eventHandler);
             this.mainVBox.getChildren().add(gridPaneHBox);
             this.mainVBox.getChildren().add(plotAndGenotypeHBox);
-            this.engineThread = new Thread(engine);
-            this.engineThread.start();
+            this.engineThreadWithBoundaries = new Thread(engineWithBoundaries);
+            this.engineThreadWithoutBoundaries = new Thread(engineWithoutBoundaries);
+            this.engineThreadWithBoundaries.start();
+            this.engineThreadWithoutBoundaries.start();
         });
         startButton.setFont(Font.font("Arial", FontWeight.BOLD, 24));
         HBox hBox = new HBox(startButton);
@@ -286,37 +289,37 @@ public class App extends Application {
     }
 
     private void placeAnimals(AbstractWorldMap map) {
-        Vector2d[] grassesAndAnimals = createAnimalsAndGrasses(map);
-//        if (map.getAnimals().size() == 5 && this.magicSimulationTextField.getText().toLowerCase().equals(5) && this.magicCount < 3) {
-//            map.placeMagicAnimals(Integer.parseInt(this.startingEnergyTextField.getText()));
-//            this.magicCount++;
-//        }
+        if (map.getAnimals().size() == 5 && this.magicSimulationTextField.getText().toLowerCase().equals("yes")) {
+            map.placeMagicAnimals(Integer.parseInt(this.startingEnergyTextField.getText()));
+            this.magicCount++;
+        }
+        Vector2d[] grassesAndAnimals = getAnimalsAndGrasses(map);
         for (Vector2d position : grassesAndAnimals) {
             VBox vBox;
             GuiElement guiElement = new GuiElement((IMapElement) map.objectAt(position));
             ImageView imageView = guiElement.getImageView();
             vBox = new VBox(imageView);
             if (map instanceof WorldMapWithBoundaries) {
-                if (map.objectAt(position) instanceof Animal && Objects.equals(this.engineThread.getState().toString(), "TIMED_WAITING")) {
-                    vBox.setOnMouseClicked((action) -> {
-                        List animalInfo = this.mapWithBoundaries.getAnimalInfo((Animal) map.objectAt(position));
-                    });
-                }
+//                if (map.objectAt(position) instanceof Animal && Objects.equals(this.engineThread.getState().toString(), "TIMED_WAITING")) {
+//                    vBox.setOnMouseClicked((action) -> {
+//                        List animalInfo = this.mapWithBoundaries.getAnimalInfo((Animal) map.objectAt(position));
+//                    });
+//                }
                 this.mapWithBoundariesGridPane.add(vBox, position.getX(), position.getY(), 1, 1);
             } else {
-                if (map.objectAt(position) instanceof Animal)
-                    if (map.objectAt(position) instanceof Animal && Objects.equals(this.engineThread.getState().toString(), "TIMED_WAITING")) {
-                        vBox.setOnMouseClicked((action) -> {
-                            List animalInfo = this.mapWithoutBoundaries.getAnimalInfo((Animal) map.objectAt(position));
-
-                        });
-                    }
+//                if (map.objectAt(position) instanceof Animal)
+//                    if (map.objectAt(position) instanceof Animal && Objects.equals(this.engineThread.getState().toString(), "TIMED_WAITING")) {
+//                        vBox.setOnMouseClicked((action) -> {
+//                            List animalInfo = this.mapWithoutBoundaries.getAnimalInfo((Animal) map.objectAt(position));
+//
+//                        });
+//                    }
                 this.mapWithoutBoundariesGridPane.add(vBox, position.getX(), position.getY(), 1, 1);
             }
         }
     }
 
-    private Vector2d[] createAnimalsAndGrasses(AbstractWorldMap map) {
+    private Vector2d[] getAnimalsAndGrasses(AbstractWorldMap map) {
         List<Grass> grasses = map.getGrass();
         List<Animal> animals = map.getAnimals();
         Vector2d[] animalsAndGrasses = new Vector2d[grasses.size() + animals.size()];
@@ -388,53 +391,88 @@ public class App extends Application {
     }
 
     private VBox createOptionButtons() {
-        Button stopButton = new Button("Stop");
-        stopButton.setOnAction((action) -> {
-            if (this.engineThread.isAlive()) {
-                this.engineThread.suspend();
-                this.threadWaiting = true;
-            }
-            // TODO save to file
-        });
-        stopButton.setFont(Font.font("Arial", FontWeight.BOLD, 20));
-        stopButton.setMaxWidth(Double.MAX_VALUE);
+        // Paths for saving information to file
+        String mapWithBoundariesFilePath = "Project_1/src/main/resources/mapWithBoundaries.csv";
+        String mapWithoutBoundariesFilePath = "Project_1/src/main/resources/mapWithoutBoundaries.csv";
 
-        Button resumeButton = new Button("Resume");
-        resumeButton.setOnAction((action) -> {
-            if (this.threadWaiting) {
-                this.engineThread.resume();
-                this.threadWaiting = false;
+        // Map with boundaries option buttons
+        Button stopButtonMapWithBoundaries = new Button("Stop map with boundaries");
+        stopButtonMapWithBoundaries.setOnAction((action) -> {
+            if (!this.mapWithBoundariesWaitingThread) {
+                this.engineThreadWithBoundaries.suspend();
+                this.mapWithBoundariesWaitingThread = true;
+            }
+
+        });
+        stopButtonMapWithBoundaries.setFont(Font.font("Arial", FontWeight.BOLD, 15));
+        stopButtonMapWithBoundaries.setMaxWidth(Double.MAX_VALUE);
+
+        Button resumeButtonMapWithBoundaries = new Button("Resume map with boundaries");
+        resumeButtonMapWithBoundaries.setOnAction((action) -> {
+            if (this.mapWithBoundariesWaitingThread) {
+                this.engineThreadWithBoundaries.resume();
+                this.mapWithBoundariesWaitingThread = false;
             }
         });
-        resumeButton.setFont(Font.font("Arial", FontWeight.BOLD, 20));
-        resumeButton.setMaxWidth(Double.MAX_VALUE);
+        resumeButtonMapWithBoundaries.setFont(Font.font("Arial", FontWeight.BOLD, 15));
+        resumeButtonMapWithBoundaries.setMaxWidth(Double.MAX_VALUE);
+
+
+        VBox mapWithBoundariesOptions = new VBox(stopButtonMapWithBoundaries, resumeButtonMapWithBoundaries);
+        mapWithBoundariesOptions.setSpacing(15);
+
+        // Map without boundaries option buttons
+        Button stopButtonMapWithoutBoundaries = new Button("Stop map without boundaries");
+        stopButtonMapWithoutBoundaries.setOnAction((action) -> {
+            if (!this.mapWithoutBoundariesWaitingThread) {
+                this.engineThreadWithoutBoundaries.suspend();
+                this.mapWithoutBoundariesWaitingThread = true;
+            }
+        });
+        stopButtonMapWithoutBoundaries.setFont(Font.font("Arial", FontWeight.BOLD, 15));
+        stopButtonMapWithoutBoundaries.setMaxWidth(Double.MAX_VALUE);
+
+        Button resumeButtonMapWithoutBoundaries = new Button("Resume map without boundaries");
+        resumeButtonMapWithoutBoundaries.setOnAction((action) -> {
+            if (this.mapWithoutBoundariesWaitingThread) {
+                this.engineThreadWithoutBoundaries.resume();
+                this.mapWithoutBoundariesWaitingThread = false;
+            }
+        });
+        resumeButtonMapWithoutBoundaries.setFont(Font.font("Arial", FontWeight.BOLD, 15));
+        resumeButtonMapWithoutBoundaries.setMaxWidth(Double.MAX_VALUE);
+
+        VBox mapWithoutBoundariesOptions = new VBox(stopButtonMapWithoutBoundaries, resumeButtonMapWithoutBoundaries);
+        mapWithoutBoundariesOptions.setSpacing(20);
 
         Button exitButton = new Button("Exit");
         exitButton.setOnAction((action) -> {
+            saveFileToCSV(this.mapWithBoundaries, mapWithBoundariesFilePath, this.mapWithBoundaries.getEra());
+            saveFileToCSV(this.mapWithoutBoundaries, mapWithoutBoundariesFilePath, this.mapWithoutBoundaries.getEra());
             Platform.exit();
             System.exit(0);
         });
-        exitButton.setFont(Font.font("Arial", FontWeight.BOLD, 20));
+        exitButton.setFont(Font.font("Arial", FontWeight.BOLD, 15));
         exitButton.setMaxWidth(Double.MAX_VALUE);
+//
+//        Button showDominantGenotype = new Button("Dominant genotype");
+//        showDominantGenotype.setOnAction((action) -> {
+//            if (this.threadWaiting) {
+//                this.dominantGenotypeWindow = new Stage();
+//                this.dominantGenotypeWindow.setTitle("Animals with dominant genotype");
+////                Scene newScene = new Scene(this.dominantGenotypeWindow, 400, 400);
+////                this.dominantGenotypeWindow.setScene(newScene);
+//                this.dominantGenotypeWindow.setX(600);
+//                this.dominantGenotypeWindow.setY(600);
+//                this.dominantGenotypeWindow.show();
+//            }
+//        });
+//        showDominantGenotype.setFont(Font.font("Arial", FontWeight.BOLD, 20));
+//        showDominantGenotype.setMaxWidth(Double.MAX_VALUE);
 
-        Button showDominantGenotype = new Button("Dominant genotype\n (only while stop)");
-        showDominantGenotype.setOnAction((action) -> {
-            if (this.threadWaiting) {
-                this.dominantGenotypeWindow = new Stage();
-                this.dominantGenotypeWindow.setTitle("Animals with dominant genotype");
-//                Scene newScene = new Scene(this.dominantGenotypeWindow, 400, 400);
-//                this.dominantGenotypeWindow.setScene(newScene);
-                this.dominantGenotypeWindow.setX(600);
-                this.dominantGenotypeWindow.setY(600);
-                this.dominantGenotypeWindow.show();
-            }
-        });
-        showDominantGenotype.setFont(Font.font("Arial", FontWeight.BOLD, 20));
-        showDominantGenotype.setMaxWidth(Double.MAX_VALUE);
-
-        VBox vBox = new VBox(stopButton, resumeButton, exitButton, showDominantGenotype);
-        vBox.setSpacing(20);
-        vBox.setAlignment(Pos.BASELINE_CENTER);
+        VBox vBox = new VBox(mapWithoutBoundariesOptions, mapWithBoundariesOptions, exitButton);
+        vBox.setSpacing(15);
+        vBox.setAlignment(Pos.TOP_CENTER);
         return vBox;
     }
 
@@ -445,11 +483,103 @@ public class App extends Application {
         return new VBox(label);
     }
 
-//    EventHandler<MouseEvent> eventHandler = new EventHandler<MouseEvent>() {
-////        @Override
-////        public void handle(MouseEvent event) {
-////            if (this..getState().toString() == "TIMED_WAITING")
-////                System.out.println("Helolololo");
-////        }
-//    };
+    private void saveFileToCSV(AbstractWorldMap map, String filePath, int era) {
+        try (PrintWriter writer = new PrintWriter(filePath)) {
+            StringBuilder stringBuilder = new StringBuilder();
+            stringBuilder.append("Date | ");
+            stringBuilder.append("Number of animals | ");
+            stringBuilder.append("Number of grasses | ");
+            stringBuilder.append("Average energy if living animals | ");
+            stringBuilder.append("Average life of dead animals | ");
+            stringBuilder.append("Average number of children for living animals");
+            stringBuilder.append("\n");
+
+            XYChart.Data animals;
+            XYChart.Data grasses;
+            XYChart.Data averageEnergy;
+            XYChart.Data averageLife;
+            XYChart.Data numberOfChildren;
+
+            int averageAmountOfAnimalsOnMapWithBoundaries = 0;
+            int averageAmountOfGrassesOnMapWithBoundaries = 0;
+            double averageAvgEnergyOnMapWithBoundaries = 0;
+            double averageAvgLifeOnMapWithBoundaries = 0;
+            double averageNumberOfChildrenOnMapWithBoundaries = 0;
+
+            int averageAmountOfAnimalsOnMapWithoutBoundaries = 0;
+            int averageAmountOfGrassesOnMapWithoutBoundaries = 0;
+            double averageAvgEnergyOnMapWithoutBoundaries = 0;
+            double averageAvgLifeOnMapWithoutBoundaries = 0;
+            double averageNumberOfChildrenOnMapWithoutBoundaries = 0;
+
+            for (int i = 0; i < era; i++) {
+                stringBuilder.append(i + 1 + " | ");
+                if (map instanceof WorldMapWithBoundaries) {
+                    animals = (XYChart.Data) this.mapWithBoundariesDataSeries1.getData().get(i);
+                    averageAmountOfAnimalsOnMapWithBoundaries += (int) animals.getYValue();
+                    stringBuilder.append(animals.getYValue() + " | ");
+                    grasses = (XYChart.Data) this.mapWithBoundariesDataSeries2.getData().get(i);
+                    averageAmountOfGrassesOnMapWithBoundaries += (int) grasses.getYValue();
+                    stringBuilder.append(grasses.getYValue() + " | ");
+                    averageEnergy = (XYChart.Data) this.mapWithBoundariesDataSeries3.getData().get(i);
+                    averageAvgEnergyOnMapWithBoundaries += (double) averageEnergy.getYValue();
+                    stringBuilder.append(averageEnergy.getYValue() + " | ");
+                    averageLife = (XYChart.Data) this.mapWithBoundariesDataSeries4.getData().get(i);
+                    averageAvgLifeOnMapWithBoundaries += (double) averageLife.getYValue();
+                    stringBuilder.append(averageLife.getYValue() + " | ");
+                    numberOfChildren = (XYChart.Data) this.mapWithBoundariesDataSeries5.getData().get(i);
+                    averageNumberOfChildrenOnMapWithBoundaries += (double) numberOfChildren.getYValue();
+                    stringBuilder.append(numberOfChildren.getYValue());
+                    stringBuilder.append("\n");
+                } else {
+                    animals = (XYChart.Data) this.mapWithoutBoundariesDataSeries1.getData().get(i);
+                    averageAmountOfAnimalsOnMapWithoutBoundaries += (int) animals.getYValue();
+                    stringBuilder.append(animals.getYValue() + " | ");
+                    grasses = (XYChart.Data) this.mapWithoutBoundariesDataSeries2.getData().get(i);
+                    averageAmountOfGrassesOnMapWithoutBoundaries += (int) grasses.getYValue();
+                    stringBuilder.append(grasses.getYValue() + " | ");
+                    averageEnergy = (XYChart.Data) this.mapWithoutBoundariesDataSeries3.getData().get(i);
+                    averageAvgEnergyOnMapWithoutBoundaries += (double) averageEnergy.getYValue();
+                    stringBuilder.append(averageEnergy.getYValue() + " | ");
+                    averageLife = (XYChart.Data) this.mapWithoutBoundariesDataSeries4.getData().get(i);
+                    averageAvgLifeOnMapWithoutBoundaries += (double) averageLife.getYValue();
+                    stringBuilder.append(averageLife.getYValue() + " | ");
+                    numberOfChildren = (XYChart.Data) this.mapWithoutBoundariesDataSeries5.getData().get(i);
+                    averageNumberOfChildrenOnMapWithoutBoundaries += (double) numberOfChildren.getYValue();
+                    stringBuilder.append(numberOfChildren.getYValue());
+                    stringBuilder.append("\n");
+                }
+            }
+            stringBuilder.append("\n");
+
+            stringBuilder.append("Date | ");
+            stringBuilder.append("Average number of animals | ");
+            stringBuilder.append("Average number of grasses | ");
+            stringBuilder.append("Total average energy if living animals | ");
+            stringBuilder.append("Total average life of dead animals | ");
+            stringBuilder.append("Total average number of children for living animals");
+            stringBuilder.append("\n");
+
+            stringBuilder.append(era + " | ");
+            if (map instanceof WorldMapWithBoundaries) {
+                stringBuilder.append((double) averageAmountOfAnimalsOnMapWithBoundaries / era + " | ");
+                stringBuilder.append(averageAmountOfGrassesOnMapWithBoundaries / era + " | ");
+                stringBuilder.append(averageAvgEnergyOnMapWithBoundaries / era + " | ");
+                stringBuilder.append(averageAvgLifeOnMapWithBoundaries / era + " | ");
+                stringBuilder.append(averageNumberOfChildrenOnMapWithBoundaries / era);
+            } else {
+                stringBuilder.append((double) averageAmountOfAnimalsOnMapWithoutBoundaries / era + " | ");
+                stringBuilder.append((double) averageAmountOfGrassesOnMapWithoutBoundaries / era + " | ");
+                stringBuilder.append(averageAvgEnergyOnMapWithoutBoundaries / era + " | ");
+                stringBuilder.append(averageAvgLifeOnMapWithoutBoundaries / era + " | ");
+                stringBuilder.append(averageNumberOfChildrenOnMapWithoutBoundaries / era);
+            }
+            writer.write(stringBuilder.toString());
+        } catch (FileNotFoundException exception) {
+            System.out.println(exception.getMessage());
+        }
+    }
 }
+
+// TODO 1 dominujący genotyp
+// TODO 2 wskazywanie zwierzęcia przy zatrzymaniu

@@ -153,18 +153,18 @@ public class AbstractWorldMap implements IWorldMap, IPositionChangeObserver {
             position = new Vector2d(position.getX(), this.mapUpperRight.getY());
         return position;
     }
-//
-//    public void placeMagicAnimals(int energy) {
-//        int i =0;
-//        while (i < this.animalsList.size()){
-//            Animal animal = this.animalsList.get(i);
-//            Animal newAnimal = new Animal(this, animal, energy, this.era);
-//            if (!this.isOccupied(newAnimal.getPosition())){
-//                place(newAnimal);
-//                i++;
-//            }
-//        }
-//    }
+
+    public void placeMagicAnimals(int energy) {
+        int i = 0;
+        while (i < 5) {
+            Animal otherAnimal = this.animalsList.get(i);
+            Animal newAnimal = new Animal(this, otherAnimal, energy, this.era);
+            if (!this.isOccupied(newAnimal.getPosition())) {
+                this.place(newAnimal);
+                i++;
+            }
+        }
+    }
 
     // Map functions
     public void removeDeadAnimals() {
