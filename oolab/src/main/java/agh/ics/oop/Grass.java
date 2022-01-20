@@ -13,7 +13,7 @@ public class Grass implements IMapElement {
 
     @Override
     public String getImagePath() {
-        return "oolab/src/main/resources/palm.png";
+        return "src/main/resources/palm.png";
     }
 
     @Override
