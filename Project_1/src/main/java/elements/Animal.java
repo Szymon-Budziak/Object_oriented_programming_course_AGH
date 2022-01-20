@@ -79,13 +79,13 @@ public class Animal implements IMapElement {
     @Override
     public String getImagePath() {
         if (this.energy >= 0.75 * this.startingEnergy)
-            return "Project_1/src/main/resources/green_animal.png";
+            return "src/main/resources/green_animal.png";
         else if (this.energy >= 0.5 * this.startingEnergy)
-            return "Project_1/src/main/resources/light_green_animal.png";
+            return "src/main/resources/light_green_animal.png";
         else if (this.energy >= 0.25 * this.startingEnergy)
-            return "Project_1/src/main/resources/orange_animal.png";
+            return "src/main/resources/orange_animal.png";
         else
-            return "Project_1/src/main/resources/red_animal.png";
+            return "src/main/resources/red_animal.png";
     }
 
     public boolean isDead() {

@@ -9,16 +9,23 @@ version '1.0-SNAPSHOT'
 
 repositories {
     mavenCentral()
-    javafx {
-        version = "17"
-        modules = ['javafx.controls']
-    }
 }
 
+javafx {
+    version = "17"
+    modules = ['javafx.controls']
+}
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(16))
+    }
+}
+application {
+    mainClassName = 'main.World'
+}
 
 dependencies {
     implementation 'junit:junit:4.13.1'
-    implementation 'org.testng:testng:7.1.0'
     testImplementation("org.junit.jupiter:junit-jupiter:5.8.1")
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
 }
