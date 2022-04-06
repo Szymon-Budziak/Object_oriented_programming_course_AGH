@@ -450,30 +450,38 @@ public class App extends Application {
             this.mapWithBoundariesDataSeries3.getData().add(new XYChart.Data(map.getEra(), map.getAverageAnimalsEnergy()));
             this.mapWithBoundariesDataSeries4.getData().add(new XYChart.Data(map.getEra(), map.getAverageDeadAnimalsLife()));
             this.mapWithBoundariesDataSeries5.getData().add(new XYChart.Data(map.getEra(), map.getAverageNumberOfChildren()));
-            this.mapWithBoundariesLineChart.getData().add(this.mapWithBoundariesDataSeries1);
-            this.mapWithBoundariesLineChart.getData().add(this.mapWithBoundariesDataSeries2);
-            this.mapWithBoundariesLineChart.getData().add(this.mapWithBoundariesDataSeries3);
-            this.mapWithBoundariesLineChart.getData().add(this.mapWithBoundariesDataSeries4);
-            this.mapWithBoundariesLineChart.getData().add(this.mapWithBoundariesDataSeries5);
+            try {
+                this.mapWithBoundariesLineChart.getData().add(this.mapWithBoundariesDataSeries1);
+                this.mapWithBoundariesLineChart.getData().add(this.mapWithBoundariesDataSeries2);
+                this.mapWithBoundariesLineChart.getData().add(this.mapWithBoundariesDataSeries3);
+                this.mapWithBoundariesLineChart.getData().add(this.mapWithBoundariesDataSeries4);
+                this.mapWithBoundariesLineChart.getData().add(this.mapWithBoundariesDataSeries5);
+            } catch (IllegalArgumentException exception) {
+                return;
+            }
         } else {
             this.mapWithoutBoundariesDataSeries1.getData().add(new XYChart.Data(map.getEra(), map.getAnimals().size()));
             this.mapWithoutBoundariesDataSeries2.getData().add(new XYChart.Data(map.getEra(), map.getGrass().size()));
             this.mapWithoutBoundariesDataSeries3.getData().add(new XYChart.Data(map.getEra(), map.getAverageAnimalsEnergy()));
             this.mapWithoutBoundariesDataSeries4.getData().add(new XYChart.Data(map.getEra(), map.getAverageDeadAnimalsLife()));
             this.mapWithoutBoundariesDataSeries5.getData().add(new XYChart.Data(map.getEra(), map.getAverageNumberOfChildren()));
-            this.mapWithoutBoundariesLineChart.getData().add(this.mapWithoutBoundariesDataSeries1);
-            this.mapWithoutBoundariesLineChart.getData().add(this.mapWithoutBoundariesDataSeries2);
-            this.mapWithoutBoundariesLineChart.getData().add(this.mapWithoutBoundariesDataSeries3);
-            this.mapWithoutBoundariesLineChart.getData().add(this.mapWithoutBoundariesDataSeries4);
-            this.mapWithoutBoundariesLineChart.getData().add(this.mapWithoutBoundariesDataSeries5);
+            try {
+                this.mapWithoutBoundariesLineChart.getData().add(this.mapWithoutBoundariesDataSeries1);
+                this.mapWithoutBoundariesLineChart.getData().add(this.mapWithoutBoundariesDataSeries2);
+                this.mapWithoutBoundariesLineChart.getData().add(this.mapWithoutBoundariesDataSeries3);
+                this.mapWithoutBoundariesLineChart.getData().add(this.mapWithoutBoundariesDataSeries4);
+                this.mapWithoutBoundariesLineChart.getData().add(this.mapWithoutBoundariesDataSeries5);
+            } catch (IllegalArgumentException exception) {
+                return;
+            }
         }
     }
 
     // Option buttons
     private VBox createOptionButtons() {
         // Paths for saving information to file
-        String mapWithBoundariesFilePath = "Project_1/src/main/resources/mapWithBoundaries.csv";
-        String mapWithoutBoundariesFilePath = "Project_1/src/main/resources/mapWithoutBoundaries.csv";
+        String mapWithBoundariesFilePath = "src/main/resources/mapWithBoundaries.csv";
+        String mapWithoutBoundariesFilePath = "src/main/resources/mapWithoutBoundaries.csv";
 
         // Map with boundaries option buttons
         Button stopButtonMapWithBoundaries = new Button("Stop map with boundaries");
